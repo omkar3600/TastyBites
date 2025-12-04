@@ -1283,6 +1283,7 @@ document.addEventListener("DOMContentLoaded", () => {
         loadAddresses();
     }
     startChatPolling();
+    addGlobalChatButton();
 });
 
 function renderProfileAddresses() {
@@ -1372,6 +1373,21 @@ function openChat(orderId, userEmail) {
     const chatOrderIdEl = document.getElementById("chat-order-id");
     if (chatOrderIdEl) {
         chatOrderIdEl.innerText = `Order #${orderId}`;
+
+        // Handle Status Badge (Create or Update Sibling)
+        let statusBadge = chatOrderIdEl.nextElementSibling;
+        if (
+            !statusBadge ||
+            !statusBadge.classList.contains("order-status-badge")
+        ) {
+            statusBadge = document.createElement("div");
+            statusBadge.className = "order-status-badge";
+            chatOrderIdEl.parentNode.insertBefore(
+                statusBadge,
+                chatOrderIdEl.nextSibling
+            );
+        }
+        statusBadge.innerText = order.status;
     }
     renderChatMessages();
 
@@ -1557,8 +1573,24 @@ function initContactPageChat() {
     };
 
     const chatOrderIdEl = document.getElementById("chat-order-id");
-    if (chatOrderIdEl)
+    if (chatOrderIdEl) {
         chatOrderIdEl.innerText = `Chat - Order #${latestOrder.id}`;
+
+        // Handle Status Badge (Create or Update Sibling)
+        let statusBadge = chatOrderIdEl.nextElementSibling;
+        if (
+            !statusBadge ||
+            !statusBadge.classList.contains("order-status-badge")
+        ) {
+            statusBadge = document.createElement("div");
+            statusBadge.className = "order-status-badge";
+            chatOrderIdEl.parentNode.insertBefore(
+                statusBadge,
+                chatOrderIdEl.nextSibling
+            );
+        }
+        statusBadge.innerText = latestOrder.status;
+    }
     renderChatMessages();
 }
 
@@ -1743,4 +1775,40 @@ function processPayment() {
     setTimeout(() => {
         window.location.href = "profile.html";
     }, 2000);
+}
+
+function addGlobalChatButton() {
+    // Prevent adding if already exists or on admin page
+    if (
+        document.getElementById("global-chat-btn") ||
+        window.location.href.includes("admin.html")
+    )
+        return;
+
+    const btn = document.createElement("button");
+    btn.id = "global-chat-btn";
+    btn.className = "global-chat-btn";
+    btn.innerHTML = '<span class="material-icons">chat</span>';
+    btn.onclick = openGlobalChat;
+    document.body.appendChild(btn);
+}
+
+function openGlobalChat() {
+    if (!currentUser) {
+        showToast("Please login to chat");
+        openLogin();
+        return;
+    }
+
+    if (!currentUser.orders || currentUser.orders.length === 0) {
+        showToast("No orders to chat about");
+        return;
+    }
+
+    // Open latest order chat
+    const sortedOrders = currentUser.orders
+        .slice()
+        .sort((a, b) => b.timestamp - a.timestamp);
+    const latestOrder = sortedOrders[0];
+    openChat(latestOrder.id, currentUser.email);
 }

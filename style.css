@@ -1953,6 +1953,22 @@ body.dark-mode .address-card p {
     border-bottom: 1px solid var(--border-color);
     margin: 0;
 }
+.order-status-badge {
+    font-size: 0.75rem;
+    padding: 5px 15px;
+    border: 1px solid var(--primary);
+    border-radius: 20px;
+    background-color: rgba(255, 99, 71, 0.1);
+    color: var(--primary);
+    margin: auto; /* Top, Right, Bottom, Left */
+    width: fit-content;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    display: block;
+    margin-top: 10px;
+    margin-bottom: 10px;
+}
 .chat-modal-content .close-modal {
     top: 20px;
     right: 20px;
@@ -2420,6 +2436,7 @@ body.dark-mode .chat-message.other .msg-bubble {
     border-radius: 10px;
     margin-bottom: 15px;
     border: 1px solid #eee;
+    margin-top: 15px;
 }
 
 .embedded-chat-footer {
@@ -2438,6 +2455,34 @@ body.dark-mode .chat-message.other .msg-bubble {
 .embedded-chat-footer button {
     padding: 10px 20px;
     border-radius: 25px;
+}
+
+.global-chat-btn {
+    position: fixed;
+    bottom: 30px;
+    right: 30px;
+    width: 60px;
+    height: 60px;
+    background: var(--primary);
+    color: white;
+    border: none;
+    border-radius: 50%;
+    box-shadow: 0 4px 15px rgba(255, 99, 71, 0.4);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    transition: all 0.3s ease;
+}
+
+.global-chat-btn:hover {
+    transform: scale(1.1) rotate(5deg);
+    box-shadow: 0 6px 20px rgba(255, 99, 71, 0.6);
+}
+
+.global-chat-btn .material-icons {
+    font-size: 28px;
 }
 
 .chat-placeholder {
