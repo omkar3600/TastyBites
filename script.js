@@ -656,7 +656,6 @@ function updateProfile() {
     document.getElementById("profile-name").innerText = currentUser.name;
 }
 
-// --- 8. TRACKER LOGIC ---
 // --- 8. REAL-TIME TRACKER LOGIC ---
 
 function initTracker() {
@@ -1026,68 +1025,6 @@ function selectPayment(method) {
     document.getElementById(`${method}-details`).classList.remove("hidden");
 }
 
-function processPayment() {
-    if (!selectedAddressId) {
-        showToast("Please select a delivery address");
-        return;
-    }
-    if (!selectedPaymentMethod) {
-        showToast("Please select a payment method");
-        return;
-    }
-
-    if (selectedPaymentMethod === "upi") {
-        const upiId = document.getElementById("upi-id").value;
-        // Basic validation
-        if (!upiId && !document.querySelector(".qr-placeholder")) {
-            // allow empty for demo if they "scanned"
-        }
-    }
-
-    // Simulate Processing
-    const btn = document.querySelector(".pay-btn");
-    const originalText = btn.innerHTML;
-    btn.innerHTML = '<i class="fa fa-spinner fa-spin"></i> Processing...';
-    btn.disabled = true;
-
-    setTimeout(() => {
-        // Update the active order status to "Paid" or just move to tracker
-        let activeOrder = JSON.parse(localStorage.getItem("ACTIVE_ORDER"));
-        if (activeOrder) {
-            // Find selected address object
-            const addrObj = currentUser.addresses.find(
-                (a) => a.id === selectedAddressId
-            );
-            activeOrder.shippingAddress = addrObj;
-
-            activeOrder.paymentMethod = selectedPaymentMethod;
-            activeOrder.status = "Preparing"; // Move to next stage after payment
-            localStorage.setItem("ACTIVE_ORDER", JSON.stringify(activeOrder));
-
-            // Update in history as well
-            let updatedUser = JSON.parse(localStorage.getItem("CURRENT_USER"));
-            if (updatedUser) {
-                const orderIdx = updatedUser.orders.findIndex(
-                    (o) => o.id === activeOrder.id
-                );
-                if (orderIdx !== -1) {
-                    updatedUser.orders[orderIdx] = activeOrder;
-                    localStorage.setItem(
-                        "CURRENT_USER",
-                        JSON.stringify(updatedUser)
-                    );
-                    updateMasterUserList(updatedUser);
-                }
-            }
-        }
-
-        showToast("Order Placed!");
-        setTimeout(() => {
-            window.location.href = "tracker.html";
-        }, 2000);
-    }, 2000);
-}
-
 // 5. Payment Page Promo Code
 function applyPaymentPromo() {
     const input = document.getElementById("payment-promo-input");
@@ -1273,7 +1210,12 @@ function handleSaveAddress(e) {
     e.target.reset();
 
     // Auto-select new address
-    selectAddress(newAddr.id);
+    if (window.location.href.includes("payment.html")) {
+        loadPaymentAddresses();
+        selectPaymentAddress(newAddr.id);
+    } else {
+        selectAddress(newAddr.id);
+    }
 }
 
 // Initialize on load
@@ -1630,11 +1572,34 @@ function loadPaymentAddresses() {
     const container = document.getElementById("payment-address-list");
     if (!container) return;
 
-    if (
-        !currentUser ||
-        !currentUser.addresses ||
-        currentUser.addresses.length === 0
-    ) {
+    if (!currentUser) {
+        container.innerHTML = `
+            <p>Please login to view addresses.</p>
+            <button class="cta-button" onclick="openLogin()" style="margin-top:10px; font-size:0.9rem;">Login</button>
+        `;
+        return;
+    }
+
+    // Ensure addresses array exists (Migration Logic)
+    if (!currentUser.addresses) {
+        currentUser.addresses = [];
+        // Migrate legacy single address if exists
+        if (currentUser.address) {
+            currentUser.addresses.push({
+                id: Date.now(),
+                label: "Default",
+                name: currentUser.name,
+                phone: currentUser.phone || "",
+                text: currentUser.address,
+                city: "Unknown",
+            });
+            delete currentUser.address; // Cleanup legacy
+            localStorage.setItem("CURRENT_USER", JSON.stringify(currentUser));
+            updateMasterUserList(currentUser);
+        }
+    }
+
+    if (currentUser.addresses.length === 0) {
         container.innerHTML = `
             <p>No saved addresses.</p>
             <button class="cta-button" onclick="openAddressModal()" style="margin-top:10px; font-size:0.9rem;">+ Add Address</button>
