@@ -555,6 +555,12 @@ function switchProfileTab(tabName) {
         document
             .querySelectorAll(".profile-menu li")[2]
             .classList.add("active");
+    if (tabName === "addresses") {
+        document
+            .querySelectorAll(".profile-menu li")[3]
+            .classList.add("active");
+        renderProfileAddresses();
+    }
 }
 
 function loadProfileData() {
@@ -568,7 +574,7 @@ function loadProfileData() {
     document.getElementById("profile-email").innerText = currentUser.email;
     document.getElementById("edit-name").value = currentUser.name;
     document.getElementById("edit-phone").value = currentUser.phone || "";
-    document.getElementById("edit-address").value = currentUser.address || "";
+    document.getElementById("edit-phone").value = currentUser.phone || "";
 
     // Fill Orders (UPDATED WITH TRACK BUTTON)
     const ordersList = document.getElementById("orders-list");
@@ -601,11 +607,18 @@ function loadProfileData() {
                         }</p>
                     </div>
                     
-                    <button class="cta-button" 
-                        onclick="trackSpecificOrder('${order.id}')"
-                        style="width: auto; padding: 8px 20px; font-size: 0.9rem;">
-                        Track
-                    </button>
+                    <div style="display: flex; gap: 10px;">
+                        <button class="cta-button" 
+                            onclick="trackSpecificOrder('${order.id}')"
+                            style="width: auto; padding: 8px 20px; font-size: 0.9rem;">
+                            Track
+                        </button>
+                        <button class="cta-button" 
+                            onclick="deleteUserOrder('${order.id}')"
+                            style="width: auto; padding: 8px 20px; font-size: 0.9rem; background: #ff4757;">
+                            <i class="material-icons" style="font-size: 1.1rem;">delete</i>
+                        </button>
+                    </div>
                 </div>
             </div>
         `
@@ -650,7 +663,7 @@ function loadProfileData() {
 function updateProfile() {
     currentUser.name = document.getElementById("edit-name").value;
     currentUser.phone = document.getElementById("edit-phone").value;
-    currentUser.address = document.getElementById("edit-address").value;
+    currentUser.phone = document.getElementById("edit-phone").value;
     localStorage.setItem("CURRENT_USER", JSON.stringify(currentUser));
     updateMasterUserList(currentUser);
     showToast("Profile Updated!");
@@ -891,12 +904,22 @@ function loadAdminDashboard() {
                             <option value="Delivered" ${
                                 order.status === "Delivered" ? "selected" : ""
                             }>Delivered</option>
+                            <option value="Cancelled by Restaurant" ${
+                                order.status === "Cancelled by Restaurant"
+                                    ? "selected"
+                                    : ""
+                            }>Cancelled by Restaurant</option>
                         </select>
                     </td>
                     <td>
                         <button class="btn-save" onclick="updateOrderStatus('${
                             user.email
                         }', '${order.id}')">Update</button>
+                        <button class="btn-delete" onclick="deleteOrder('${
+                            user.email
+                        }', '${
+                    order.id
+                }')" style="margin-left:5px;">Delete</button>
                     </td>
                 `;
                 tbody.prepend(tr); // Add newest to top
@@ -960,6 +983,33 @@ function updateOrderStatus(userEmail, orderId) {
     }
 }
 
+function deleteOrder(userEmail, orderId) {
+    if (!confirm("Are you sure you want to delete this order?")) return;
+
+    let allUsers = JSON.parse(localStorage.getItem("ALL_USERS"));
+    const userIndex = allUsers.findIndex((u) => u.email === userEmail);
+
+    if (userIndex !== -1) {
+        // Filter out the order to delete it
+        allUsers[userIndex].orders = allUsers[userIndex].orders.filter(
+            (o) => o.id !== orderId
+        );
+
+        // Save to DB
+        localStorage.setItem("ALL_USERS", JSON.stringify(allUsers));
+
+        // Sync with CURRENT_USER if needed
+        const currentUser = JSON.parse(localStorage.getItem("CURRENT_USER"));
+        if (currentUser && currentUser.email === userEmail) {
+            currentUser.orders = allUsers[userIndex].orders;
+            localStorage.setItem("CURRENT_USER", JSON.stringify(currentUser));
+        }
+
+        showToast("Order Deleted Successfully");
+        loadAdminDashboard();
+    }
+}
+
 // ==========================================================================
 // PAYMENT PAGE LOGIC
 // ==========================================================================
@@ -986,6 +1036,10 @@ function selectPayment(method) {
 }
 
 function processPayment() {
+    if (!selectedAddressId) {
+        showToast("Please select a delivery address");
+        return;
+    }
     if (!selectedPaymentMethod) {
         showToast("Please select a payment method");
         return;
@@ -1009,6 +1063,12 @@ function processPayment() {
         // Update the active order status to "Paid" or just move to tracker
         let activeOrder = JSON.parse(localStorage.getItem("ACTIVE_ORDER"));
         if (activeOrder) {
+            // Find selected address object
+            const addrObj = currentUser.addresses.find(
+                (a) => a.id === selectedAddressId
+            );
+            activeOrder.shippingAddress = addrObj;
+
             activeOrder.paymentMethod = selectedPaymentMethod;
             activeOrder.status = "Preparing"; // Move to next stage after payment
             localStorage.setItem("ACTIVE_ORDER", JSON.stringify(activeOrder));
@@ -1030,9 +1090,232 @@ function processPayment() {
             }
         }
 
-        showToast("Payment Successful!");
+        showToast("Order Placed!");
         setTimeout(() => {
             window.location.href = "tracker.html";
-        }, 1000);
+        }, 2000);
     }, 2000);
+}
+
+// 5. Payment Page Promo Code
+function applyPaymentPromo() {
+    const input = document.getElementById("payment-promo-input");
+    const code = input.value.trim().toUpperCase();
+
+    if (!code) {
+        showToast("Please enter a code");
+        return;
+    }
+
+    // Get original total from localStorage (before discount)
+    // We assume 'cartTotal' stored in checkout() is the subtotal if no discount was applied there,
+    // OR it's the discounted total. To be safe for this feature, let's treat it as the amount to pay.
+    // Ideally, we should store subtotal and discount separately.
+    // For now, we will apply discount on the CURRENT displayed total.
+
+    let currentTotalStr = document
+        .getElementById("payment-total")
+        .innerText.replace(/,/g, "");
+    let currentTotal = parseInt(currentTotalStr);
+
+    let discountAmount = 0;
+
+    if (code === "TASTY10") {
+        discountAmount = Math.floor(currentTotal * 0.1);
+        showToast("Promo Applied: 10% Off!");
+    } else if (code === "SAVE50") {
+        discountAmount = 50;
+        showToast("Promo Applied: ₹50 Off!");
+    } else {
+        showToast("Invalid Promo Code");
+        return;
+    }
+
+    // Update UI
+    const newTotal = currentTotal - discountAmount;
+    document.getElementById("payment-total").innerText = formatPrice(
+        newTotal < 0 ? 0 : newTotal
+    );
+
+    const discountRow = document.getElementById("payment-discount-row");
+    const discountAmountEl = document.getElementById("payment-discount-amount");
+    if (discountRow && discountAmountEl) {
+        discountRow.style.display = "block";
+        discountAmountEl.textContent = formatPrice(discountAmount);
+    }
+
+    // Update ACTIVE_ORDER so the final paid amount is correct
+    let activeOrder = JSON.parse(localStorage.getItem("ACTIVE_ORDER"));
+    if (activeOrder) {
+        activeOrder.total = formatPrice(newTotal < 0 ? 0 : newTotal);
+        localStorage.setItem("ACTIVE_ORDER", JSON.stringify(activeOrder));
+    }
+}
+
+// 6. Delete Order History Logic
+function deleteUserOrder(orderId) {
+    if (
+        !confirm(
+            "Are you sure you want to delete this order from your history?"
+        )
+    )
+        return;
+
+    if (!currentUser) return;
+
+    // Remove from currentUser.orders
+    currentUser.orders = currentUser.orders.filter((o) => o.id !== orderId);
+
+    // Save to localStorage
+    localStorage.setItem("CURRENT_USER", JSON.stringify(currentUser));
+    updateMasterUserList(currentUser);
+
+    showToast("Order removed from history");
+    loadProfileData(); // Refresh list
+}
+
+// ==========================================================================
+// ADDRESS MANAGEMENT LOGIC
+// ==========================================================================
+
+let selectedAddressId = null;
+
+function loadAddresses() {
+    const list = document.getElementById("address-list");
+    if (!list) return;
+
+    if (!currentUser) {
+        list.innerHTML = "<p>Please login to view addresses.</p>";
+        return;
+    }
+
+    // Ensure addresses array exists
+    if (!currentUser.addresses) {
+        currentUser.addresses = [];
+        // Migrate legacy single address if exists
+        if (currentUser.address) {
+            currentUser.addresses.push({
+                id: Date.now(),
+                label: "Default",
+                name: currentUser.name,
+                phone: currentUser.phone || "",
+                text: currentUser.address,
+                city: "Unknown",
+            });
+            delete currentUser.address; // Cleanup legacy
+            localStorage.setItem("CURRENT_USER", JSON.stringify(currentUser));
+            updateMasterUserList(currentUser);
+        }
+    }
+
+    if (currentUser.addresses.length === 0) {
+        list.innerHTML = "<p>No saved addresses. Add one above!</p>";
+        return;
+    }
+
+    list.innerHTML = currentUser.addresses
+        .map(
+            (addr, idx) => `
+        <div class="address-card ${
+            selectedAddressId === addr.id ? "selected" : ""
+        }" 
+             onclick="selectAddress(${addr.id})">
+            <h4>${addr.label}</h4>
+            <p><strong>${addr.name}</strong> (${addr.phone})</p>
+            <p>${addr.text}</p>
+            <p>${addr.city}</p>
+        </div>
+    `
+        )
+        .join("");
+}
+
+function selectAddress(id) {
+    selectedAddressId = id;
+    loadAddresses(); // Re-render to update selection UI
+}
+
+function openAddressModal() {
+    document.getElementById("address-modal").classList.add("active");
+}
+
+function closeAddressModal() {
+    document.getElementById("address-modal").classList.remove("active");
+}
+
+function handleSaveAddress(e) {
+    e.preventDefault();
+    if (!currentUser) return showToast("Please login first");
+
+    const newAddr = {
+        id: Date.now(),
+        label: document.getElementById("addr-label").value,
+        name: document.getElementById("addr-name").value,
+        phone: document.getElementById("addr-phone").value,
+        text: document.getElementById("addr-text").value,
+        city: document.getElementById("addr-city").value,
+    };
+
+    if (!currentUser.addresses) currentUser.addresses = [];
+    currentUser.addresses.push(newAddr);
+
+    localStorage.setItem("CURRENT_USER", JSON.stringify(currentUser));
+    updateMasterUserList(currentUser);
+
+    showToast("Address Saved!");
+    closeAddressModal();
+    e.target.reset();
+
+    // Auto-select new address
+    selectAddress(newAddr.id);
+}
+
+// Initialize on load
+document.addEventListener("DOMContentLoaded", () => {
+    // ... existing init ...
+    if (document.getElementById("address-list")) {
+        loadAddresses();
+    }
+});
+
+function renderProfileAddresses() {
+    const list = document.getElementById("profile-address-list");
+    if (!list) return;
+
+    if (
+        !currentUser ||
+        !currentUser.addresses ||
+        currentUser.addresses.length === 0
+    ) {
+        list.innerHTML = "<p>No saved addresses.</p>";
+        return;
+    }
+
+    list.innerHTML = currentUser.addresses
+        .map(
+            (addr) => `
+        <div class="address-card">
+            <button class="btn-delete" onclick="deleteAddress(${addr.id})" 
+                style="position: absolute; top: 10px; right: 10px; padding: 5px 10px; font-size: 0.7rem;">
+                Delete
+            </button>
+            <h4>${addr.label}</h4>
+            <p><strong>${addr.name}</strong> (${addr.phone})</p>
+            <p>${addr.text}</p>
+            <p>${addr.city}</p>
+        </div>
+    `
+        )
+        .join("");
+}
+
+function deleteAddress(id) {
+    if (!confirm("Delete this address?")) return;
+
+    currentUser.addresses = currentUser.addresses.filter((a) => a.id !== id);
+    localStorage.setItem("CURRENT_USER", JSON.stringify(currentUser));
+    updateMasterUserList(currentUser);
+
+    showToast("Address Deleted");
+    renderProfileAddresses();
 }

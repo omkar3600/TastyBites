@@ -215,7 +215,7 @@ nav {
 }
 .highlight {
     color: var(--primary);
-    
+
     background: linear-gradient(45deg, #ff2929, #ffea00);
 
     -webkit-background-clip: text;
@@ -539,7 +539,6 @@ body.dark-mode .review-card {
 
 .review-card:hover {
     transform: translateY(-10px);
-    
 }
 
 .review-header {
@@ -570,13 +569,11 @@ body.dark-mode .review-card {
     line-height: 1.6;
     font-size: 0.95rem;
 }
-.review-card p:hover{
-   
+.review-card p:hover {
     background: linear-gradient(45deg, #ff9100, #f60101); /* Step 1 */
-  -webkit-background-clip: text; /* Step 2 */
-  background-clip: text; /* Step 2 */
-  color: transparent; 
-
+    -webkit-background-clip: text; /* Step 2 */
+    background-clip: text; /* Step 2 */
+    color: transparent;
 }
 body.dark-mode .review-card p {
     color: #aaa;
@@ -1138,7 +1135,6 @@ body.dark-mode .qty-controls {
 
 /* --- Footer --- */
 
-
 footer {
     background-color: #111;
     color: #fff;
@@ -1166,11 +1162,11 @@ footer {
     font-size: 0.9rem;
     margin-top: 10px;
 }
-.footer-col p:hover{
+.footer-col p:hover {
     background: linear-gradient(45deg, #ffdd00, #f68c01); /* Step 1 */
-  -webkit-background-clip: text; /* Step 2 */
-  background-clip: text; /* Step 2 */
-  color: transparent; 
+    -webkit-background-clip: text; /* Step 2 */
+    background-clip: text; /* Step 2 */
+    color: transparent;
 }
 .footer-col h3 {
     font-size: 1.2rem;
@@ -1298,8 +1294,6 @@ footer {
         opacity: 1;
     }
 }
-
-
 
 /* --- Mobile Responsiveness --- */
 .hamburger {
@@ -1569,7 +1563,7 @@ footer {
     outline: none;
     transition: all 0.3s ease;
     /* Custom arrow appearance */
-    appearance: none; 
+    appearance: none;
     background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23333%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E");
     background-repeat: no-repeat;
     background-position: right 10px center;
@@ -1809,4 +1803,124 @@ footer {
         opacity: 1;
         transform: translateY(0);
     }
+}
+.btn-delete {
+    background: linear-gradient(135deg, #ff4757, #ff6b81);
+    color: white;
+    border: none;
+    padding: 8px 20px;
+    border-radius: 50px;
+    cursor: pointer;
+    font-size: 0.85rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    box-shadow: 0 4px 6px rgba(255, 71, 87, 0.25);
+    transition: all 0.3s ease;
+}
+
+.btn-delete:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 12px rgba(255, 71, 87, 0.35);
+}
+
+.btn-delete:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 4px rgba(255, 71, 87, 0.25);
+}
+
+/* --- Address Section --- */
+.address-section {
+    margin-bottom: 30px;
+}
+.section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+}
+.add-address-btn {
+    background: none;
+    border: 2px solid var(--primary);
+    color: var(--primary);
+    padding: 5px 15px;
+    border-radius: 20px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: 0.3s;
+}
+.add-address-btn:hover {
+    background: var(--primary);
+    color: white;
+}
+
+.address-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 15px;
+}
+
+.address-card {
+    border: 2px solid var(--border-color);
+    border-radius: 10px;
+    padding: 15px;
+    cursor: pointer;
+    transition: 0.3s;
+    background: var(--card-bg);
+    position: relative;
+}
+.address-card:hover {
+    border-color: var(--secondary);
+}
+.address-card.selected {
+    border-color: var(--primary);
+    background-color: rgba(255, 99, 71, 0.05);
+}
+.address-card.selected::after {
+    content: "\f00c"; /* FontAwesome Check */
+    font-family: "Font Awesome 6 Free";
+    font-weight: 900;
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    color: var(--primary);
+}
+
+.address-card h4 {
+    margin-bottom: 5px;
+    color: var(--text-color);
+    font-size: 1rem;
+}
+.address-card p {
+    font-size: 0.9rem;
+    color: #666;
+    margin-bottom: 3px;
+    line-height: 1.4;
+}
+body.dark-mode .address-card p {
+    color: #aaa;
+}
+
+/* Modal Form Styles */
+.form-group {
+    margin-bottom: 15px;
+}
+.form-group label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: 600;
+    font-size: 0.9rem;
+}
+.form-group input,
+.form-group textarea {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid var(--border-color);
+    border-radius: 5px;
+    background: var(--bg-color);
+    color: var(--text-color);
+    font-family: inherit;
+}
+.form-group textarea {
+    resize: vertical;
 }

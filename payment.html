@@ -62,6 +62,44 @@
                             >₹<span id="payment-total">0</span></span
                         >
                     </div>
+
+                    <!-- Promo Code Section -->
+                    <div class="promo-code-section" style="margin-top: 20px">
+                        <input
+                            type="text"
+                            id="payment-promo-input"
+                            placeholder="Promo Code (Try TASTY10)"
+                        />
+                        <button onclick="applyPaymentPromo()">Apply</button>
+                    </div>
+                    <div
+                        class="discount-row"
+                        id="payment-discount-row"
+                        style="
+                            display: none;
+                            color: green;
+                            font-size: 0.9rem;
+                            margin-top: 10px;
+                        "
+                    >
+                        Discount: -₹<span id="payment-discount-amount">0</span>
+                    </div>
+                </div>
+
+                <div class="address-section">
+                    <div class="section-header">
+                        <h3>Delivery Address</h3>
+                        <button
+                            class="add-address-btn"
+                            onclick="openAddressModal()"
+                        >
+                            + Add New
+                        </button>
+                    </div>
+                    <div id="address-list" class="address-list">
+                        <!-- Addresses will be injected here -->
+                        <p>Loading addresses...</p>
+                    </div>
                 </div>
 
                 <div class="payment-methods-container">
@@ -146,7 +184,7 @@
                 </div>
 
                 <button class="cta-button pay-btn" onclick="processPayment()">
-                    Pay Now <span class="material-icons">lock</span>
+                    Place Order <span class="material-icons">lock</span>
                 </button>
             </div>
         </section>
@@ -242,6 +280,51 @@
         <!-- Reusing Cart Sidebar & Modals from index.html structure if needed, 
              but for payment page, we might just need the basic structure. 
              Keeping it simple for now as per plan. -->
+
+        <!-- Address Modal -->
+        <div id="address-modal" class="modal hidden">
+            <div class="modal-content">
+                <span class="close-modal" onclick="closeAddressModal()"
+                    >&times;</span
+                >
+                <h2>Add New Address</h2>
+                <form id="address-form" onsubmit="handleSaveAddress(event)">
+                    <div class="form-group">
+                        <label>Label (e.g. Home, Office)</label>
+                        <input
+                            type="text"
+                            id="addr-label"
+                            placeholder="Home"
+                            required
+                        />
+                    </div>
+                    <div class="form-group">
+                        <label>Full Name</label>
+                        <input type="text" id="addr-name" required />
+                    </div>
+                    <div class="form-group">
+                        <label>Phone Number</label>
+                        <input type="tel" id="addr-phone" required />
+                    </div>
+                    <div class="form-group">
+                        <label>Address (House No, Street)</label>
+                        <textarea id="addr-text" rows="3" required></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>City & Zip</label>
+                        <input
+                            type="text"
+                            id="addr-city"
+                            placeholder="Mumbai, 400001"
+                            required
+                        />
+                    </div>
+                    <button type="submit" class="cta-button">
+                        Save Address
+                    </button>
+                </form>
+            </div>
+        </div>
 
         <div id="toast-box"></div>
         <script src="script.js"></script>

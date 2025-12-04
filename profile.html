@@ -1,126 +1,253 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>My Profile - TastyBites</title>
-    <link rel="stylesheet" href="style.css">
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800&display=swap" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
-</head>
-<body>
-
-    <nav>
-        <div class="hamburger" onclick="toggleMobileMenu()"><span class="material-icons">menu</span></div>
-        <div class="logo" onclick="window.location.href='index.html'">Tasty<span>Bites</span></div>
-        <ul class="nav-links" id="nav-links">
-            <li><a href="index.html">Home</a></li>
-            <li><a href="menu.html">Menu</a></li>
-            <li><a href="contact.html">Contact</a></li>
-        </ul>
-        <div class="nav-actions">
-            <button id="theme-toggle" onclick="toggleTheme()"><span class="material-icons">dark_mode</span></button>
-            <div class="cart-icon" onclick="toggleCart()">
-                <span class="material-icons">shopping_cart</span>
-                <span id="cart-count">0</span>
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>My Profile - TastyBites</title>
+        <link rel="stylesheet" href="style.css" />
+        <link
+            href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800&display=swap"
+            rel="stylesheet"
+        />
+        <link
+            href="https://fonts.googleapis.com/icon?family=Material+Icons"
+            rel="stylesheet"
+        />
+        <link
+            rel="stylesheet"
+            href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css"
+        />
+    </head>
+    <body>
+        <nav>
+            <div class="hamburger" onclick="toggleMobileMenu()">
+                <span class="material-icons">menu</span>
             </div>
-            <div id="user-action-area">
-                <button class="login-btn" onclick="openLogin()">Login</button>
+            <div class="logo" onclick="window.location.href='index.html'">
+                Tasty<span>Bites</span>
             </div>
-        </div>
-    </nav>
-
-    <section class="profile-section">
-        <div class="profile-container">
-            <div class="profile-sidebar">
-                <div class="user-badge">
-                    <div class="user-avatar"><span class="material-icons">person</span></div>
-                    <h3 id="profile-name">Loading...</h3>
-                    <p id="profile-email">...</p>
+            <ul class="nav-links" id="nav-links">
+                <li><a href="index.html">Home</a></li>
+                <li><a href="menu.html">Menu</a></li>
+                <li><a href="contact.html">Contact</a></li>
+            </ul>
+            <div class="nav-actions">
+                <button id="theme-toggle" onclick="toggleTheme()">
+                    <span class="material-icons">dark_mode</span>
+                </button>
+                <div class="cart-icon" onclick="toggleCart()">
+                    <span class="material-icons">shopping_cart</span>
+                    <span id="cart-count">0</span>
                 </div>
-                <ul class="profile-menu">
-                    <li class="active" onclick="switchProfileTab('info')">
-                        <span class="material-icons">badge</span> Personal Info
-                    </li>
-                    <li onclick="switchProfileTab('orders')">
-                        <span class="material-icons">receipt_long</span> Order History
-                    </li>
-                    <li onclick="switchProfileTab('favorites')">
-                        <span class="material-icons">favorite</span> Favorites
-                    </li>
-                    <li onclick="logoutUser()" style="color: var(--primary);">
-                        <span class="material-icons">logout</span> Logout
-                    </li>
-                </ul>
-            </div>
-
-            <div class="profile-content">
-                
-                <div id="tab-info" class="profile-tab active">
-                    <h2>Personal Information</h2>
-                    <form class="info-form" onsubmit="event.preventDefault(); updateProfile()">
-    <div class="form-group">
-        <label>Full Name</label>
-        <div style="position: relative;">
-            <span class="material-icons" style="position: absolute; left: 15px; top: 50%; transform: translateY(-50%); color: #888;">person</span>
-            <input type="text" id="edit-name" value="" style="padding-left: 45px;">
-        </div>
-    </div>
-    
-    <div class="form-group">
-        <label>Phone Number</label>
-        <div style="position: relative;">
-            <span class="material-icons" style="position: absolute; left: 15px; top: 50%; transform: translateY(-50%); color: #888;">phone</span>
-            <input type="text" id="edit-phone" placeholder="+91 00000 00000" style="padding-left: 45px;">
-        </div>
-    </div>
-    
-    <div class="form-group">
-        <label>Delivery Address</label>
-        <textarea id="edit-address" rows="3" placeholder="Enter your full address"></textarea>
-    </div>
-    
-    <button class="cta-button">Save Changes</button>
-</form>
+                <div id="user-action-area">
+                    <button class="login-btn" onclick="openLogin()">
+                        Login
+                    </button>
                 </div>
+            </div>
+        </nav>
 
-                <div id="tab-orders" class="profile-tab">
-                    <h2>Order History</h2>
-                    <div id="orders-list" class="orders-list">
+        <section class="profile-section">
+            <div class="profile-container">
+                <div class="profile-sidebar">
+                    <div class="user-badge">
+                        <div class="user-avatar">
+                            <span class="material-icons">person</span>
                         </div>
+                        <h3 id="profile-name">Loading...</h3>
+                        <p id="profile-email">...</p>
+                    </div>
+                    <ul class="profile-menu">
+                        <li class="active" onclick="switchProfileTab('info')">
+                            <span class="material-icons">badge</span> Personal
+                            Info
+                        </li>
+                        <li onclick="switchProfileTab('orders')">
+                            <span class="material-icons">receipt_long</span>
+                            Order History
+                        </li>
+                        <li onclick="switchProfileTab('favorites')">
+                            <span class="material-icons">favorite</span>
+                            Favorites
+                        </li>
+                        <li onclick="switchProfileTab('addresses')">
+                            <span class="material-icons">location_on</span>
+                            Addresses
+                        </li>
+                        <li
+                            onclick="logoutUser()"
+                            style="color: var(--primary)"
+                        >
+                            <span class="material-icons">logout</span> Logout
+                        </li>
+                    </ul>
                 </div>
 
-                <div id="tab-favorites" class="profile-tab">
-                    <h2>My Favorites</h2>
-                    <div id="fav-grid" class="menu-grid" style="grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));">
+                <div class="profile-content">
+                    <div id="tab-info" class="profile-tab active">
+                        <h2>Personal Information</h2>
+                        <form
+                            class="info-form"
+                            onsubmit="event.preventDefault(); updateProfile()"
+                        >
+                            <div class="form-group">
+                                <label>Full Name</label>
+                                <div style="position: relative">
+                                    <span
+                                        class="material-icons"
+                                        style="
+                                            position: absolute;
+                                            left: 15px;
+                                            top: 50%;
+                                            transform: translateY(-50%);
+                                            color: #888;
+                                        "
+                                        >person</span
+                                    >
+                                    <input
+                                        type="text"
+                                        id="edit-name"
+                                        value=""
+                                        style="padding-left: 45px"
+                                    />
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label>Phone Number</label>
+                                <div style="position: relative">
+                                    <span
+                                        class="material-icons"
+                                        style="
+                                            position: absolute;
+                                            left: 15px;
+                                            top: 50%;
+                                            transform: translateY(-50%);
+                                            color: #888;
+                                        "
+                                        >phone</span
+                                    >
+                                    <input
+                                        type="text"
+                                        id="edit-phone"
+                                        placeholder="+91 00000 00000"
+                                        style="padding-left: 45px"
+                                    />
+                                </div>
+                            </div>
+
+                            <button class="cta-button">Save Changes</button>
+                        </form>
+                    </div>
+
+                    <div id="tab-orders" class="profile-tab">
+                        <h2>Order History</h2>
+                        <div id="orders-list" class="orders-list"></div>
+                    </div>
+
+                    <div id="tab-favorites" class="profile-tab">
+                        <h2>My Favorites</h2>
+                        <div
+                            id="fav-grid"
+                            class="menu-grid"
+                            style="
+                                grid-template-columns: repeat(
+                                    auto-fill,
+                                    minmax(200px, 1fr)
+                                );
+                            "
+                        ></div>
+                    </div>
+
+                    <div id="tab-addresses" class="profile-tab">
+                        <div class="section-header">
+                            <h2>Saved Addresses</h2>
+                            <button
+                                class="add-address-btn"
+                                onclick="openAddressModal()"
+                            >
+                                + Add New
+                            </button>
                         </div>
+                        <div id="profile-address-list" class="address-list">
+                            <!-- Addresses injected via JS -->
+                        </div>
+                    </div>
                 </div>
+            </div>
+        </section>
 
+        <div id="cart-sidebar" class="cart-sidebar">
+            <div class="cart-header">
+                <h3>Your Cart</h3>
+                <span class="material-icons close-cart" onclick="toggleCart()"
+                    >close</span
+                >
+            </div>
+            <div id="cart-items" class="cart-items">
+                <p class="empty-msg">Your cart is empty.</p>
+            </div>
+            <div class="cart-footer">
+                <div class="total">Total: ₹<span id="cart-total">0</span></div>
+                <button class="checkout-btn" onclick="checkout()">
+                    Checkout
+                </button>
             </div>
         </div>
-    </section>
-
-    <div id="cart-sidebar" class="cart-sidebar">
-        <div class="cart-header">
-            <h3>Your Cart</h3>
-            <span class="material-icons close-cart" onclick="toggleCart()">close</span>
+        <div id="overlay" onclick="toggleCart()"></div>
+        <!-- Address Modal (Reused) -->
+        <div id="address-modal" class="modal hidden">
+            <div class="modal-content">
+                <span class="close-modal" onclick="closeAddressModal()"
+                    >&times;</span
+                >
+                <h2>Add New Address</h2>
+                <form id="address-form" onsubmit="handleSaveAddress(event)">
+                    <div class="form-group">
+                        <label>Label (e.g. Home, Office)</label>
+                        <input
+                            type="text"
+                            id="addr-label"
+                            placeholder="Home"
+                            required
+                        />
+                    </div>
+                    <div class="form-group">
+                        <label>Full Name</label>
+                        <input type="text" id="addr-name" required />
+                    </div>
+                    <div class="form-group">
+                        <label>Phone Number</label>
+                        <input type="tel" id="addr-phone" required />
+                    </div>
+                    <div class="form-group">
+                        <label>Address (House No, Street)</label>
+                        <textarea id="addr-text" rows="3" required></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>City & Zip</label>
+                        <input
+                            type="text"
+                            id="addr-city"
+                            placeholder="Mumbai, 400001"
+                            required
+                        />
+                    </div>
+                    <button type="submit" class="cta-button">
+                        Save Address
+                    </button>
+                </form>
+            </div>
         </div>
-        <div id="cart-items" class="cart-items"><p class="empty-msg">Your cart is empty.</p></div>
-        <div class="cart-footer">
-            <div class="total">Total: ₹<span id="cart-total">0</span></div>
-            <button class="checkout-btn" onclick="checkout()">Checkout</button>
-        </div>
-    </div>
-    <div id="overlay" onclick="toggleCart()"></div>
-    <div id="toast-box"></div>
 
-    <script src="script.js"></script>
-    <script>
-        // Initialize Profile on Load
-        document.addEventListener('DOMContentLoaded', () => {
-            loadProfileData();
-        });
-    </script>
-</body>
+        <div id="toast-box"></div>
+
+        <script src="script.js"></script>
+        <script>
+            // Initialize Profile on Load
+            document.addEventListener("DOMContentLoaded", () => {
+                loadProfileData();
+            });
+        </script>
+    </body>
 </html>
