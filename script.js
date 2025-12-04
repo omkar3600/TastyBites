@@ -496,6 +496,12 @@ function renderMenu(items = menuItems) {
 
 function filterMenu(category) {
     if (!menuContainer) return;
+
+    if (category === "favorites" && !currentUser) {
+        showToast("Please Login to view Favorites");
+        return;
+    }
+
     document.querySelectorAll(".filter-btn").forEach((btn) => {
         btn.classList.remove("active");
         const btnCat = btn.textContent.toLowerCase().replace(/\s/g, "");
@@ -506,10 +512,15 @@ function filterMenu(category) {
             btn.classList.add("active");
     });
 
-    const items =
-        category === "all"
-            ? menuItems
-            : menuItems.filter((i) => i.category === category);
+    let items;
+    if (category === "all") {
+        items = menuItems;
+    } else if (category === "favorites") {
+        items = menuItems.filter((i) => currentUser.favorites.includes(i.id));
+    } else {
+        items = menuItems.filter((i) => i.category === category);
+    }
+
     renderMenu(items);
 }
 
