@@ -24,76 +24,34 @@
         />
     </head>
     <body>
-        <!-- navbar starts from here -->
-        <!-- navbar starts from here -->
-        <!-- navbar starts from here -->
-        <!-- <nav>
+        <nav>
             <div class="hamburger" onclick="toggleMobileMenu()">
                 <span class="material-icons">menu</span>
             </div>
-
-            <div class="logo">Tasty<span>Bites</span></div>
-
+            <div class="logo" onclick="window.location.href='index.html'">
+                Tasty<span>Bites</span>
+            </div>
             <ul class="nav-links" id="nav-links">
                 <li><a href="index.html">Home</a></li>
                 <li><a href="menu.html">Menu</a></li>
-                <li><a href="contact.html" class="active-link">Contact</a></li>
+                <li><a href="contact.html">Contact</a></li>
             </ul>
-
             <div class="nav-actions">
                 <button id="theme-toggle" onclick="toggleTheme()">
                     <span class="material-icons">dark_mode</span>
                 </button>
-                <button class="login-btn" onclick="openLogin()">Login</button>
-
                 <div class="cart-icon" onclick="toggleCart()">
                     <span class="material-icons">shopping_cart</span>
                     <span id="cart-count">0</span>
                 </div>
+                <div id="user-action-area">
+                    <button class="login-btn" onclick="openLogin()">
+                        Login
+                    </button>
+                </div>
             </div>
-        </nav> -->
+        </nav>
 
-
-
-
-
-        <nav>
-        <div class="hamburger" onclick="toggleMobileMenu()"><span class="material-icons">menu</span></div>
-        <div class="logo" onclick="window.location.href='index.html'">Tasty<span>Bites</span></div>
-        <ul class="nav-links" id="nav-links">
-            <li><a href="index.html">Home</a></li>
-            <li><a href="menu.html">Menu</a></li>
-            <li><a href="contact.html">Contact</a></li>
-        </ul>
-        <div class="nav-actions">
-            <button id="theme-toggle" onclick="toggleTheme()"><span class="material-icons">dark_mode</span></button>
-            <div class="cart-icon" onclick="toggleCart()">
-                <span class="material-icons">shopping_cart</span>
-                <span id="cart-count">0</span>
-            </div>
-            <div id="user-action-area">
-                <button class="login-btn" onclick="openLogin()">Login</button>
-            </div>
-        </div>
-    </nav>
-
-
-
-
-
-
-
-        <!-- contact section start from here -->
-
-        <!-- contact section start from here -->
-
-        <!-- contact section start from here -->
-
-        <!-- contact section start from here -->
-
-        <!-- contact section start from here -->
-
-        <!-- contact section start from here -->
         <section id="contact" class="contact-section">
             <h2>Contact Us</h2>
             <div class="contact-container">
@@ -142,18 +100,6 @@
             </div>
         </section>
 
-        <!-- cart sidebar   -->
-
-        <!-- cart sidebar   -->
-
-        <!-- cart sidebar   -->
-
-        <!-- cart sidebar   -->
-
-        <!-- cart sidebar   -->
-
-        <!-- cart sidebar   -->
-
         <div id="product-modal" class="modal">
             <div class="modal-content product-modal-content">
                 <span class="close-modal" onclick="closeProductModal()"
@@ -196,18 +142,6 @@
             </div>
         </div>
 
-        <!-- login panel starts here -->
-
-        <!-- login panel starts here -->
-
-        <!-- login panel starts here -->
-
-        <!-- login panel starts here -->
-
-        <!-- login panel starts here -->
-
-        <!-- login panel starts here -->
-
         <div id="overlay" onclick="toggleCart()"></div>
         <div id="auth-modal" class="modal">
             <div class="modal-content">
@@ -231,6 +165,14 @@
                     <button type="submit" class="cta-button full-width">
                         Login
                     </button>
+                    <button
+                        type="button"
+                        class="cta-button full-width"
+                        onclick="loginAsDemo()"
+                        style="background: #28a745; margin-top: 10px"
+                    >
+                        Demo Login
+                    </button>
                     <p class="auth-note">Forgot Password?</p>
                 </form>
                 <form id="signup-form" class="auth-form hidden">
@@ -244,15 +186,6 @@
                 </form>
             </div>
         </div>
-
-        <!-- footer starts from here -->
-        <!--  -->
-
-        <!-- footer starts from here -->
-        <!--  -->
-
-        <!-- footer starts from here -->
-        <!--  -->
 
         <footer>
             <div class="footer-content">
@@ -330,18 +263,6 @@
                 >
             </div>
         </footer>
-
-        <!--  -->
-
-        <!--  -->
-
-        <!--  -->
-
-        <!--  -->
-
-        <!--  -->
-
-        <!--  -->
 
         <div id="toast-box"></div>
 

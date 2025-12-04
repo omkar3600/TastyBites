@@ -574,7 +574,7 @@ function loadProfileData() {
     document.getElementById("profile-email").innerText = currentUser.email;
     document.getElementById("edit-name").value = currentUser.name;
     document.getElementById("edit-phone").value = currentUser.phone || "";
-    document.getElementById("edit-phone").value = currentUser.phone || "";
+    document.getElementById("edit-email").value = currentUser.email;
 
     // Fill Orders (UPDATED WITH TRACK BUTTON)
     const ordersList = document.getElementById("orders-list");
@@ -1220,7 +1220,11 @@ function loadAddresses() {
             selectedAddressId === addr.id ? "selected" : ""
         }" 
              onclick="selectAddress(${addr.id})">
-            <h4>${addr.label}</h4>
+            <h4>${addr.label} ${
+                addr.isDefault
+                    ? '<span style="font-size:0.7rem; background:#28a745; color:white; padding:2px 6px; border-radius:4px; margin-left:5px;">Default</span>'
+                    : ""
+            }</h4>
             <p><strong>${addr.name}</strong> (${addr.phone})</p>
             <p>${addr.text}</p>
             <p>${addr.city}</p>
@@ -1228,6 +1232,12 @@ function loadAddresses() {
     `
         )
         .join("");
+
+    // Auto-select default if nothing selected
+    if (!selectedAddressId) {
+        const defaultAddr = currentUser.addresses.find((a) => a.isDefault);
+        if (defaultAddr) selectAddress(defaultAddr.id);
+    }
 }
 
 function selectAddress(id) {
@@ -1247,6 +1257,11 @@ function handleSaveAddress(e) {
     e.preventDefault();
     if (!currentUser) return showToast("Please login first");
 
+    if (!currentUser.addresses) currentUser.addresses = [];
+
+    // First address is default by default
+    const isFirst = currentUser.addresses.length === 0;
+
     const newAddr = {
         id: Date.now(),
         label: document.getElementById("addr-label").value,
@@ -1254,9 +1269,9 @@ function handleSaveAddress(e) {
         phone: document.getElementById("addr-phone").value,
         text: document.getElementById("addr-text").value,
         city: document.getElementById("addr-city").value,
+        isDefault: isFirst,
     };
 
-    if (!currentUser.addresses) currentUser.addresses = [];
     currentUser.addresses.push(newAddr);
 
     localStorage.setItem("CURRENT_USER", JSON.stringify(currentUser));
@@ -1294,11 +1309,21 @@ function renderProfileAddresses() {
     list.innerHTML = currentUser.addresses
         .map(
             (addr) => `
-        <div class="address-card">
-            <button class="btn-delete" onclick="deleteAddress(${addr.id})" 
-                style="position: absolute; top: 10px; right: 10px; padding: 5px 10px; font-size: 0.7rem;">
-                Delete
-            </button>
+        <div class="address-card" style="position: relative;">
+            <div style="position: absolute; top: 10px; right: 10px; display: flex; gap: 5px;">
+                ${
+                    !addr.isDefault
+                        ? `<button class="cta-button" onclick="setDefaultAddress(${addr.id})" 
+                           style="padding: 5px 10px; font-size: 0.7rem; background: #6c757d;">
+                           Set Default
+                           </button>`
+                        : '<span style="font-size:0.8rem; background:#28a745; color:white; padding:5px 10px; border-radius:4px;">Default</span>'
+                }
+                <button class="btn-delete" onclick="deleteAddress(${addr.id})" 
+                    style="padding: 5px 10px; font-size: 0.7rem;">
+                    Delete
+                </button>
+            </div>
             <h4>${addr.label}</h4>
             <p><strong>${addr.name}</strong> (${addr.phone})</p>
             <p>${addr.text}</p>
@@ -1307,6 +1332,20 @@ function renderProfileAddresses() {
     `
         )
         .join("");
+}
+
+function setDefaultAddress(id) {
+    if (!currentUser) return;
+
+    currentUser.addresses.forEach((a) => {
+        a.isDefault = a.id === id;
+    });
+
+    localStorage.setItem("CURRENT_USER", JSON.stringify(currentUser));
+    updateMasterUserList(currentUser);
+
+    showToast("Default Address Updated");
+    renderProfileAddresses();
 }
 
 function deleteAddress(id) {
