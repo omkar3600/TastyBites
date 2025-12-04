@@ -227,6 +227,29 @@ function handleSignup(e) {
     checkLoginState();
 }
 
+function loginAsDemo() {
+    const demoUser = {
+        name: "Demo User",
+        email: "demo@tastybites.com",
+        password: "demo",
+        phone: "9876543210",
+        address: "123 Tasty Street, Foodie City",
+        orders: [],
+        favorites: [1, 3, 5], // Pre-fill some favorites
+    };
+
+    // Ensure demo user is in the master list
+    updateMasterUserList(demoUser);
+
+    // Login
+    currentUser = demoUser;
+    localStorage.setItem("CURRENT_USER", JSON.stringify(demoUser));
+    showToast("Logged in as Demo User");
+    closeLogin();
+    checkLoginState();
+    if (window.location.href.includes("profile.html")) loadProfileData();
+}
+
 function checkLoginState() {
     const navAction = document.getElementById("user-action-area");
     if (!navAction) return;
