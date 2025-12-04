@@ -164,7 +164,6 @@ nav {
 }
 .cart-icon .material-icons {
     margin-top: 3px;
-    /* margin: auto; */
     font-size: 28px;
     color: var(--primary);
 }
@@ -203,7 +202,6 @@ nav {
     padding: 50px;
     animation: fadeInUp 1.5s ease-out;
     background-color: #1e1e1eb9;
-    /* opacity: 30%; */
     border-radius: 50px;
 }
 .hero h1 {
@@ -211,7 +209,6 @@ nav {
     line-height: 1.2;
     margin-bottom: 20px;
     font-weight: 800;
-    /* opacity: 50%; */
 }
 .highlight {
     color: var(--primary);
@@ -219,6 +216,7 @@ nav {
     background: linear-gradient(45deg, #ff2929, #ffea00);
 
     -webkit-background-clip: text;
+    background-clip: text;
     -webkit-text-fill-color: transparent;
 }
 .hero p {
@@ -603,7 +601,6 @@ body.dark-mode .review-card p {
     color: var(--white);
     display: flex;
     justify-content: space-between;
-    /* border-radius: 50px; */
 }
 .close-cart {
     cursor: pointer;
@@ -2123,186 +2120,6 @@ body.dark-mode .chat-message.other .msg-bubble {
     gap: 40px;
     max-width: 1200px;
     width: 100%;
-    background-color: linear-gradient(140deg, #ffbb00, #ff0000);
-    border-radius: 20px;
-    overflow: hidden;
-    box-shadow: var(--shadow);
-}
-
-.contact-info {
-    flex: 1;
-    min-width: 300px;
-    padding: 40px;
-    background-color: linear-gradient(140deg, #ffbb00, #ff0000);
-    color: var(--white);
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-}
-
-.contact-info h2 {
-    font-size: 2.5rem;
-    margin-bottom: 20px;
-    color: var(--white);
-}
-
-.contact-info p {
-    margin-bottom: 30px;
-    opacity: 0.9;
-    line-height: 1.6;
-}
-
-.info-item {
-    display: flex;
-    align-items: center;
-    gap: 15px;
-    margin-bottom: 20px;
-}
-
-.info-item .material-icons {
-    font-size: 1.5rem;
-    background: rgba(255, 255, 255, 0.2);
-    padding: 10px;
-    border-radius: 50%;
-}
-
-.info-item p {
-    margin-bottom: 0;
-    font-weight: 500;
-}
-
-.social-links-contact {
-    display: flex;
-    gap: 15px;
-    margin-top: 30px;
-}
-
-.social-links-contact a {
-    width: 40px;
-    height: 40px;
-    background: rgba(255, 255, 255, 0.2);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 50%;
-    color: var(--white);
-    transition: 0.3s;
-}
-
-.social-links-contact a:hover {
-    background: var(--white);
-    color: var(--primary);
-    transform: translateY(-3px);
-}
-
-.contact-form {
-    flex: 1.5;
-    min-width: 350px;
-    padding: 40px;
-    background: var(--card-bg);
-}
-
-.contact-form h2 {
-    font-size: 2rem;
-    margin-bottom: 30px;
-    color: var(--text-color);
-}
-
-.contact-form .form-group {
-    margin-bottom: 20px;
-}
-
-.contact-form input,
-.contact-form textarea {
-    width: 100%;
-    padding: 15px;
-    border: 2px solid #eee;
-    border-radius: 10px;
-    font-family: "Poppins", sans-serif;
-    font-size: 1rem;
-    background: var(--bg-color);
-    color: var(--text-color);
-    transition: 0.3s;
-}
-
-.contact-form input:focus,
-.contact-form textarea:focus {
-    border-color: var(--primary);
-    outline: none;
-    box-shadow: 0 0 0 4px rgba(255, 99, 71, 0.1);
-}
-
-.contact-form .cta-button {
-    width: 100%;
-    padding: 15px;
-    font-size: 1.1rem;
-    margin-top: 10px;
-}
-
-#chat-badge {
-    position: absolute;
-    top: -5px;
-    right: -5px;
-    background: red;
-    color: white;
-    font-size: 0.7rem;
-    font-weight: bold;
-    padding: 2px 6px;
-    border-radius: 50%;
-}
-#chat-badge.hidden {
-    display: none;
-}
-
-/* Footer Admin Button */
-.footer-admin-btn {
-    background: transparent;
-    border: 1px solid #888;
-    color: #888;
-    padding: 5px 10px;
-    border-radius: 4px;
-    font-size: 0.8rem;
-    cursor: pointer;
-    margin-left: 10px;
-    transition: 0.3s;
-}
-.footer-admin-btn:hover {
-    border-color: var(--primary);
-    color: var(--primary);
-}
-
-/* Admin Header User Button */
-.admin-user-btn {
-    background: transparent;
-    border: 1px solid white;
-    color: white;
-    padding: 5px 15px;
-    border-radius: 4px;
-    cursor: pointer;
-    margin-right: 10px;
-}
-.admin-user-btn:hover {
-    background: rgba(255, 255, 255, 0.2);
-}
-
-/* ==========================================================================
-   CONTACT PAGE STYLES
-   ========================================================================== */
-.contact-section {
-    padding: 120px 5% 60px;
-    min-height: 80vh;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background-color: var(--bg-color);
-}
-
-.contact-container {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 40px;
-    max-width: 1200px;
-    width: 100%;
     background: var(--card-bg);
     border-radius: 20px;
     overflow: hidden;
@@ -2313,7 +2130,6 @@ body.dark-mode .chat-message.other .msg-bubble {
     flex: 1;
     min-width: 300px;
     padding: 40px;
-    /* background: var(--primary) */
     background: linear-gradient(45deg, #ffbb00, #ff0000);
     color: var(--white);
     display: flex;
