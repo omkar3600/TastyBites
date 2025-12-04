@@ -40,14 +40,15 @@
                 <button id="theme-toggle" onclick="toggleTheme()">
                     <span class="material-icons">dark_mode</span>
                 </button>
-                <div class="cart-icon" onclick="toggleCart()">
-                    <span class="material-icons">shopping_cart</span>
-                    <span id="cart-count">0</span>
-                </div>
                 <div id="user-action-area">
                     <button class="login-btn" onclick="openLogin()">
                         Login
                     </button>
+                </div>
+
+                <div class="cart-icon" onclick="toggleCart()">
+                    <span class="material-icons">shopping_cart</span>
+                    <span id="cart-count">0</span>
                 </div>
             </div>
         </nav>
@@ -349,12 +350,35 @@
                     <p>
                         &copy; 2025 TastyBites Food Club. All rights reserved.
                     </p>
-                    <a href="#" class="back-to-top"
-                        >Back to Top
-                        <span class="material-icons">arrow_upward</span></a
+                    <button
+                        class="footer-admin-btn"
+                        onclick="window.location.href='admin.html'"
                     >
+                        Admin Panel
+                    </button>
                 </div>
             </footer>
+        </div>
+
+        <div id="chat-modal" class="modal">
+            <div class="modal-content chat-modal-content">
+                <span class="close-modal" onclick="closeChat()">&times;</span>
+                <h2 id="chat-order-id">Order Chat</h2>
+                <div id="chat-body" class="chat-body">
+                    <!-- Messages will appear here -->
+                </div>
+                <div class="chat-footer">
+                    <input
+                        type="text"
+                        id="chat-input"
+                        placeholder="Type a message..."
+                        onkeypress="if(event.key==='Enter') sendChatMessage()"
+                    />
+                    <button class="cta-button" onclick="sendChatMessage()">
+                        Send
+                    </button>
+                </div>
+            </div>
         </div>
 
         <div id="toast-box"></div>

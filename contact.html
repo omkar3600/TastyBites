@@ -40,74 +40,74 @@
                 <button id="theme-toggle" onclick="toggleTheme()">
                     <span class="material-icons">dark_mode</span>
                 </button>
-                <div class="cart-icon" onclick="toggleCart()">
-                    <span class="material-icons">shopping_cart</span>
-                    <span id="cart-count">0</span>
-                </div>
                 <div id="user-action-area">
                     <button class="login-btn" onclick="openLogin()">
                         Login
                     </button>
                 </div>
+
+                <div class="cart-icon" onclick="toggleCart()">
+                    <span class="material-icons">shopping_cart</span>
+                    <span id="cart-count">0</span>
+                </div>
             </div>
         </nav>
 
-        <section id="contact" class="contact-section">
-            <h2>Contact Us</h2>
+        <section class="contact-section">
             <div class="contact-container">
                 <div class="contact-info">
-                    <div class="info-box">
+                    <h2>Get in Touch</h2>
+                    <p>
+                        Have questions or feedback? We'd love to hear from you.
+                        Reach out to us using the form or the details below.
+                    </p>
+                    <div class="info-item">
                         <span class="material-icons">location_on</span>
-                        <h3>Address</h3>
-                        <p>
-                            TastyBites Food Club, Foodie Street, Pune,
-                            Maharashtra
-                        </p>
+                        <p>123 Food Street, Tasty City, TC 45678</p>
                     </div>
-                    <div class="info-box">
+                    <div class="info-item">
                         <span class="material-icons">phone</span>
-                        <h3>Phone</h3>
-                        <p>+91 77968 57021</p>
+                        <p>+1 (555) 123-4567</p>
                     </div>
-                    <div class="info-box">
+                    <div class="info-item">
                         <span class="material-icons">email</span>
-                        <h3>Email</h3>
-                        <p>order@tastybites.com</p>
+                        <p>support@tastybites.com</p>
                     </div>
-                    <div class="info-box">
-                        <span class="material-icons">schedule</span>
-                        <h3>Hours</h3>
-                        <p>Mon - Sun: 10:00 AM to 11:00 PM</p>
+                    <div class="social-links-contact">
+                        <a href="#" class="social-icon facebook"
+                            ><i class="fa-brands fa-facebook-f"></i
+                        ></a>
+                        <a href="#" class="social-icon youtube"
+                            ><i class="fa-brands fa-youtube"></i
+                        ></a>
+                        <a href="#" class="social-icon instagram"
+                            ><i class="fa-brands fa-instagram"></i
+                        ></a>
                     </div>
                 </div>
-
-                <form
-                    class="contact-form"
-                    onsubmit="event.preventDefault(); showToast('Message Sent! We will respond shortly.');"
-                >
-                    <h3>Send us a message</h3>
-                    <input type="text" placeholder="Your Name" required />
-                    <input type="email" placeholder="Email" required />
-                    <textarea
-                        placeholder="Your Message"
-                        rows="5"
-                        required
-                    ></textarea>
-                    <button type="submit" class="cta-button">
-                        Send Message
-                    </button>
-                </form>
+                <div class="contact-chat-wrapper" id="embedded-chat-container">
+                    <h2 id="chat-order-id">Order Chat</h2>
+                    <div id="chat-body" class="chat-body embedded-chat-body">
+                        <!-- Messages will appear here -->
+                        <p class="chat-placeholder">
+                            Select an order to start chatting or login to view
+                            history.
+                        </p>
+                    </div>
+                    <div class="chat-footer embedded-chat-footer">
+                        <input
+                            type="text"
+                            id="chat-input"
+                            placeholder="Type a message..."
+                            onkeypress="if(event.key==='Enter') sendChatMessage()"
+                        />
+                        <button class="cta-button" onclick="sendChatMessage()">
+                            Send
+                        </button>
+                    </div>
+                </div>
             </div>
         </section>
-
-        <div id="product-modal" class="modal">
-            <div class="modal-content product-modal-content">
-                <span class="close-modal" onclick="closeProductModal()"
-                    >&times;</span
-                >
-                <div id="product-detail-container"></div>
-            </div>
-        </div>
 
         <div id="cart-sidebar" class="cart-sidebar">
             <div class="cart-header">
@@ -143,6 +143,7 @@
         </div>
 
         <div id="overlay" onclick="toggleCart()"></div>
+
         <div id="auth-modal" class="modal">
             <div class="modal-content">
                 <span class="close-modal" onclick="closeLogin()">&times;</span>
@@ -257,10 +258,12 @@
 
             <div class="footer-bottom">
                 <p>&copy; 2025 TastyBites Food Club. All rights reserved.</p>
-                <a href="#" class="back-to-top"
-                    >Back to Top
-                    <span class="material-icons">arrow_upward</span></a
+                <button
+                    class="footer-admin-btn"
+                    onclick="window.location.href='admin.html'"
                 >
+                    Admin Panel
+                </button>
             </div>
         </footer>
 

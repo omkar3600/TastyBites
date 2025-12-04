@@ -20,6 +20,12 @@
             <div class="nav-actions">
                 <span id="admin-name" style="font-weight: 600">Admin</span>
                 <button
+                    class="admin-user-btn"
+                    onclick="window.location.href='index.html'"
+                >
+                    User View
+                </button>
+                <button
                     onclick="logoutAdmin()"
                     style="
                         background: transparent;
@@ -156,6 +162,27 @@
                 </table>
             </div>
         </section>
+
+        <div id="chat-modal" class="modal">
+            <div class="modal-content chat-modal-content">
+                <span class="close-modal" onclick="closeChat()">&times;</span>
+                <h2 id="chat-order-id">Order Chat</h2>
+                <div id="chat-body" class="chat-body">
+                    <!-- Messages will appear here -->
+                </div>
+                <div class="chat-footer">
+                    <input
+                        type="text"
+                        id="chat-input"
+                        placeholder="Type a message..."
+                        onkeypress="if(event.key==='Enter') sendChatMessage()"
+                    />
+                    <button class="cta-button" onclick="sendChatMessage()">
+                        Send
+                    </button>
+                </div>
+            </div>
+        </div>
 
         <div id="toast-box"></div>
         <script src="script.js"></script>

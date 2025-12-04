@@ -11,8 +11,8 @@
             rel="stylesheet"
         />
         <link
-            rel="stylesheet"
             href="https://fonts.googleapis.com/icon?family=Material+Icons"
+            rel="stylesheet"
         />
         <link rel="icon" type="image/x-icon" href="./assets/favicon.ico" />
         <link
@@ -38,244 +38,127 @@
                 <button id="theme-toggle" onclick="toggleTheme()">
                     <span class="material-icons">dark_mode</span>
                 </button>
-                <div class="cart-icon" onclick="toggleCart()">
-                    <span class="material-icons">shopping_cart</span>
-                    <span id="cart-count">0</span>
-                </div>
                 <div id="user-action-area">
                     <button class="login-btn" onclick="openLogin()">
                         Login
                     </button>
+                </div>
+
+                <div class="cart-icon" onclick="toggleCart()">
+                    <span class="material-icons">shopping_cart</span>
+                    <span id="cart-count">0</span>
                 </div>
             </div>
         </nav>
 
         <section class="payment-section">
             <div class="payment-container">
-                <h2>Secure Checkout</h2>
+                <h2>Checkout & Payment</h2>
 
-                <div class="order-summary">
-                    <h3>Order Summary</h3>
-                    <div class="summary-row">
-                        <span>Total Amount</span>
-                        <span class="summary-total"
-                            >₹<span id="payment-total">0</span></span
-                        >
+                <div class="payment-grid">
+                    <div class="order-summary-box">
+                        <h3>Order Summary</h3>
+                        <div id="payment-items-list">
+                            <!-- Items will be populated by JS -->
+                        </div>
+                        <div class="payment-total-row">
+                            <span>Total Amount:</span>
+                            <span>₹<span id="payment-total">0</span></span>
+                        </div>
                     </div>
 
-                    <!-- Promo Code Section -->
-                    <div class="promo-code-section" style="margin-top: 20px">
-                        <input
-                            type="text"
-                            id="payment-promo-input"
-                            placeholder="Promo Code (Try TASTY10)"
-                        />
-                        <button onclick="applyPaymentPromo()">Apply</button>
-                    </div>
-                    <div
-                        class="discount-row"
-                        id="payment-discount-row"
-                        style="
-                            display: none;
-                            color: green;
-                            font-size: 0.9rem;
-                            margin-top: 10px;
-                        "
-                    >
-                        Discount: -₹<span id="payment-discount-amount">0</span>
-                    </div>
-                </div>
-
-                <div class="address-section">
-                    <div class="section-header">
+                    <div class="payment-methods-box">
                         <h3>Delivery Address</h3>
-                        <button
-                            class="add-address-btn"
-                            onclick="openAddressModal()"
-                        >
-                            + Add New
-                        </button>
+                        <div id="payment-address-list">
+                            <!-- Addresses will be populated by JS -->
+                        </div>
                     </div>
-                    <div id="address-list" class="address-list">
-                        <!-- Addresses will be injected here -->
-                        <p>Loading addresses...</p>
-                    </div>
-                </div>
 
-                <div class="payment-methods-container">
-                    <h3>Select Payment Method</h3>
+                    <div class="payment-methods-box" style="margin-top: 20px">
+                        <h3>Select Payment Method</h3>
 
-                    <div class="payment-options">
-                        <div
-                            class="payment-option"
-                            onclick="selectPayment('upi')"
-                        >
+                        <div class="payment-option">
                             <input
                                 type="radio"
                                 name="payment"
-                                id="upi"
+                                id="pay-upi"
                                 value="upi"
+                                checked
+                                onchange="togglePaymentFields()"
                             />
-                            <label for="upi">
-                                <span class="method-icon"
-                                    ><i class="fa-brands fa-google-pay"></i
-                                ></span>
-                                <div class="method-details">
-                                    <span class="method-name">UPI / VPA</span>
-                                    <span class="method-desc"
-                                        >Google Pay, PhonePe, Paytm</span
-                                    >
-                                </div>
+                            <label for="pay-upi">
+                                <i class="fa-brands fa-google-pay"></i> UPI /
+                                GPay / PhonePe
                             </label>
                         </div>
+                        <div id="upi-fields" class="payment-details-fields">
+                            <input
+                                type="text"
+                                placeholder="Enter UPI ID (e.g. name@okhdfcbank)"
+                            />
+                        </div>
 
-                        <div id="upi-details" class="payment-details hidden">
-                            <div class="upi-input-group">
+                        <div class="payment-option">
+                            <input
+                                type="radio"
+                                name="payment"
+                                id="pay-card"
+                                value="card"
+                                onchange="togglePaymentFields()"
+                            />
+                            <label for="pay-card">
+                                <i class="fa-regular fa-credit-card"></i> Credit
+                                / Debit Card
+                            </label>
+                        </div>
+                        <div
+                            id="card-fields"
+                            class="payment-details-fields hidden"
+                        >
+                            <input
+                                type="text"
+                                placeholder="Card Number"
+                                maxlength="16"
+                            />
+                            <div class="card-expiry-cvv">
                                 <input
                                     type="text"
-                                    placeholder="Enter UPI ID (e.g. user@upi)"
-                                    id="upi-id"
+                                    placeholder="MM/YY"
+                                    maxlength="5"
                                 />
-                                <button class="verify-btn">Verify</button>
+                                <input
+                                    type="text"
+                                    placeholder="CVV"
+                                    maxlength="3"
+                                />
                             </div>
-                            <p class="or-divider">- OR -</p>
-                            <div class="qr-placeholder">
-                                <span class="material-icons"
-                                    >qr_code_scanner</span
-                                >
-                                <p>Scan QR Code</p>
-                            </div>
+                            <input type="text" placeholder="Cardholder Name" />
                         </div>
 
-                        <div
-                            class="payment-option"
-                            onclick="selectPayment('cod')"
-                        >
+                        <div class="payment-option">
                             <input
                                 type="radio"
                                 name="payment"
-                                id="cod"
+                                id="pay-cod"
                                 value="cod"
+                                onchange="togglePaymentFields()"
                             />
-                            <label for="cod">
-                                <span class="method-icon"
-                                    ><i class="fa-solid fa-money-bill-wave"></i
-                                ></span>
-                                <div class="method-details">
-                                    <span class="method-name"
-                                        >Cash on Delivery</span
-                                    >
-                                    <span class="method-desc"
-                                        >Pay cash upon receiving your
-                                        order</span
-                                    >
-                                </div>
+                            <label for="pay-cod">
+                                <i class="fa-solid fa-money-bill-wave"></i> Cash
+                                on Delivery
                             </label>
                         </div>
 
-                        <div id="cod-details" class="payment-details hidden">
-                            <p class="cod-msg">
-                                <i class="material-icons">check_circle</i>
-                                You can pay via Cash or UPI at the time of
-                                delivery.
-                            </p>
-                        </div>
+                        <button
+                            class="cta-button full-width"
+                            onclick="processPayment()"
+                        >
+                            Pay Now
+                        </button>
                     </div>
                 </div>
-
-                <button class="cta-button pay-btn" onclick="processPayment()">
-                    Place Order <span class="material-icons">lock</span>
-                </button>
             </div>
         </section>
-
-        <div class="footxyz">
-            <footer>
-                <div class="footer-content">
-                    <div class="footer-col">
-                        <div class="logo">Tasty<span>Bites</span></div>
-                        <p>
-                            Delicious food delivered to your doorstep in
-                            minutes. Fresh ingredients, hot meals, and happy
-                            customers.
-                        </p>
-
-                        <div class="payment-methods">
-                            <h3>We Accept</h3>
-                            <div class="payment-icons">
-                                <i class="fa-brands fa-cc-visa"></i>
-                                <i class="fa-brands fa-cc-mastercard"></i>
-                                <i class="fa-brands fa-cc-paypal"></i>
-                                <i class="fa-brands fa-cc-apple-pay"></i>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="footer-col">
-                        <h3>Quick Links</h3>
-                        <ul>
-                            <li><a href="index.html">Home</a></li>
-                            <li><a href="menu.html">Menu</a></li>
-                            <li><a href="contact.html">Contact Us</a></li>
-                            <li>
-                                <a href="#" onclick="openLogin()"
-                                    >Login / Sign Up</a
-                                >
-                            </li>
-                        </ul>
-                    </div>
-
-                    <div class="footer-col">
-                        <h3>Follow Us</h3>
-                        <div class="social-links">
-                            <a
-                                href="https://facebook.com"
-                                class="social-icon facebook"
-                                ><i class="fa-brands fa-facebook-f"></i
-                            ></a>
-                            <a
-                                href="https://youtube.com"
-                                class="social-icon youtube"
-                                ><i class="fa-brands fa-youtube"></i
-                            ></a>
-                            <a
-                                href="https://instagram.com"
-                                class="social-icon instagram"
-                                ><i class="fa-brands fa-instagram"></i
-                            ></a>
-                        </div>
-
-                        <h3 style="margin-top: 20px">Newsletter</h3>
-                        <p class="newsletter-text">
-                            Subscribe for 10% off your first order!
-                        </p>
-                        <form
-                            class="newsletter-form"
-                            onsubmit="event.preventDefault(); alert('Subscribed!');"
-                        >
-                            <input
-                                type="email"
-                                placeholder="Your email..."
-                                required
-                            />
-                            <button type="submit">
-                                <span class="material-icons">send</span>
-                            </button>
-                        </form>
-                    </div>
-                </div>
-
-                <div class="footer-bottom">
-                    <p>
-                        &copy; 2025 TastyBites Food Club. All rights reserved.
-                    </p>
-                    <a href="#" class="back-to-top"
-                        >Back to Top
-                        <span class="material-icons">arrow_upward</span></a
-                    >
-                </div>
-            </footer>
-        </div>
 
         <!-- Address Modal -->
         <div id="address-modal" class="modal hidden">
@@ -374,15 +257,147 @@
             </div>
         </div>
 
+        <footer>
+            <div class="footer-content">
+                <div class="footer-col">
+                    <div class="logo">Tasty<span>Bites</span></div>
+                    <p>
+                        Delicious food delivered to your doorstep in minutes.
+                        Fresh ingredients, hot meals, and happy customers.
+                    </p>
+
+                    <div class="payment-methods">
+                        <h3>We Accept</h3>
+                        <div class="payment-icons">
+                            <i class="fa-brands fa-cc-visa"></i>
+                            <i class="fa-brands fa-cc-mastercard"></i>
+                            <i class="fa-brands fa-cc-paypal"></i>
+                            <i class="fa-brands fa-cc-apple-pay"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="footer-col">
+                    <h3>Quick Links</h3>
+                    <ul>
+                        <li><a href="index.html">Home</a></li>
+                        <li><a href="menu.html">Menu</a></li>
+                        <li><a href="contact.html">Contact Us</a></li>
+                        <li>
+                            <a href="#" onclick="openLogin()"
+                                >Login / Sign Up</a
+                            >
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="footer-col">
+                    <h3>Follow Us</h3>
+                    <div class="social-links">
+                        <a href="#" class="social-icon facebook"
+                            ><i class="fa-brands fa-facebook-f"></i
+                        ></a>
+                        <a href="#" class="social-icon youtube"
+                            ><i class="fa-brands fa-youtube"></i
+                        ></a>
+                        <a href="#" class="social-icon instagram"
+                            ><i class="fa-brands fa-instagram"></i
+                        ></a>
+                    </div>
+
+                    <h3 style="margin-top: 20px">Newsletter</h3>
+                    <p class="newsletter-text">
+                        Subscribe for 10% off your first order!
+                    </p>
+                    <form
+                        class="newsletter-form"
+                        onsubmit="event.preventDefault(); alert('Subscribed!');"
+                    >
+                        <input
+                            type="email"
+                            placeholder="Your email..."
+                            required
+                        />
+                        <button type="submit">
+                            <span class="material-icons">send</span>
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <div class="footer-bottom">
+                <p>&copy; 2025 TastyBites Food Club. All rights reserved.</p>
+                <button
+                    class="footer-admin-btn"
+                    onclick="window.location.href='admin.html'"
+                >
+                    Admin Panel
+                </button>
+            </div>
+        </footer>
+
+        <div id="chat-modal" class="modal">
+            <div class="modal-content chat-modal-content">
+                <span class="close-modal" onclick="closeChat()">&times;</span>
+                <h2 id="chat-order-id">Order Chat</h2>
+                <div id="chat-body" class="chat-body">
+                    <!-- Messages will appear here -->
+                </div>
+                <div class="chat-footer">
+                    <input
+                        type="text"
+                        id="chat-input"
+                        placeholder="Type a message..."
+                        onkeypress="if(event.key==='Enter') sendChatMessage()"
+                    />
+                    <button class="cta-button" onclick="sendChatMessage()">
+                        Send
+                    </button>
+                </div>
+            </div>
+        </div>
+
         <div id="toast-box"></div>
+        <div id="cart-sidebar" class="cart-sidebar">
+            <div class="cart-header">
+                <h3>Your Cart</h3>
+                <span class="material-icons close-cart" onclick="toggleCart()"
+                    >close</span
+                >
+            </div>
+            <div id="cart-items" class="cart-items">
+                <p class="empty-msg">Your cart is empty.</p>
+            </div>
+            <div class="cart-footer">
+                <div class="promo-code-section">
+                    <input
+                        type="text"
+                        id="promo-input"
+                        placeholder="Promo Code (Try TASTY10)"
+                    />
+                    <button onclick="applyPromo()">Apply</button>
+                </div>
+                <div
+                    class="discount-row"
+                    id="discount-row"
+                    style="display: none; color: green; font-size: 0.9rem"
+                >
+                    Discount: -₹<span id="discount-amount">0</span>
+                </div>
+                <div class="total">Total: ₹<span id="cart-total">0</span></div>
+                <button class="checkout-btn" onclick="checkout()">
+                    Checkout
+                </button>
+            </div>
+        </div>
+        <div id="overlay" onclick="toggleCart()"></div>
+
         <script src="script.js"></script>
         <script>
-            // Inline script for page specific init if needed,
-            // but we will move logic to script.js as planned.
             document.addEventListener("DOMContentLoaded", () => {
-                // Load total from localStorage if available
                 const total = localStorage.getItem("cartTotal") || "0";
-                document.getElementById("payment-total").innerText = total;
+                const totalEl = document.getElementById("payment-total");
+                if (totalEl) totalEl.innerText = total;
             });
         </script>
     </body>

@@ -401,31 +401,10 @@ function checkout() {
         return;
     }
 
-    const orderId = "TB-" + Math.floor(Math.random() * 90000 + 10000);
     const total = document.getElementById("cart-total").textContent;
-
-    const newOrder = {
-        id: orderId,
-        items: cart,
-        total: total,
-        date: new Date().toLocaleDateString(),
-        status: "Processing",
-        timestamp: new Date().getTime(),
-    };
-
-    currentUser.orders.push(newOrder);
-    localStorage.setItem("CURRENT_USER", JSON.stringify(currentUser));
-    updateMasterUserList(currentUser);
-    localStorage.setItem("ACTIVE_ORDER", JSON.stringify(newOrder));
-
-    cart = [];
-    saveCart();
-    updateCartUI();
-    toggleCart();
-
-    // Redirect to payment page instead of tracker directly
-    // Store the order temporarily if needed, or just pass the total via localStorage
     localStorage.setItem("cartTotal", total);
+
+    // Redirect to payment page
     window.location.href = "payment.html";
 }
 
@@ -608,6 +587,13 @@ function loadProfileData() {
                     </div>
                     
                     <div style="display: flex; gap: 10px;">
+                        <button class="cta-button" 
+                            onclick="openChat('${order.id}', '${
+                    currentUser.email
+                }')"
+                            style="width: auto; padding: 8px 20px; font-size: 0.9rem; background: #17a2b8;">
+                            Chat
+                        </button>
                         <button class="cta-button" 
                             onclick="trackSpecificOrder('${order.id}')"
                             style="width: auto; padding: 8px 20px; font-size: 0.9rem;">
@@ -912,6 +898,11 @@ function loadAdminDashboard() {
                         </select>
                     </td>
                     <td>
+                        <button class="btn-save" onclick="openChat('${
+                            order.id
+                        }', '${
+                    user.email
+                }')" style="background: #17a2b8; margin-bottom: 5px;">Chat</button>
                         <button class="btn-save" onclick="updateOrderStatus('${
                             user.email
                         }', '${order.id}')">Update</button>
@@ -1074,18 +1065,18 @@ function processPayment() {
             localStorage.setItem("ACTIVE_ORDER", JSON.stringify(activeOrder));
 
             // Update in history as well
-            let currentUser = JSON.parse(localStorage.getItem("CURRENT_USER"));
-            if (currentUser) {
-                const orderIdx = currentUser.orders.findIndex(
+            let updatedUser = JSON.parse(localStorage.getItem("CURRENT_USER"));
+            if (updatedUser) {
+                const orderIdx = updatedUser.orders.findIndex(
                     (o) => o.id === activeOrder.id
                 );
                 if (orderIdx !== -1) {
-                    currentUser.orders[orderIdx] = activeOrder;
+                    updatedUser.orders[orderIdx] = activeOrder;
                     localStorage.setItem(
                         "CURRENT_USER",
-                        JSON.stringify(currentUser)
+                        JSON.stringify(updatedUser)
                     );
-                    updateMasterUserList(currentUser);
+                    updateMasterUserList(updatedUser);
                 }
             }
         }
@@ -1291,6 +1282,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (document.getElementById("address-list")) {
         loadAddresses();
     }
+    startChatPolling();
 });
 
 function renderProfileAddresses() {
@@ -1357,4 +1349,398 @@ function deleteAddress(id) {
 
     showToast("Address Deleted");
     renderProfileAddresses();
+}
+// ==========================================================================
+// ORDER CHAT LOGIC
+// ==========================================================================
+
+let currentChatOrder = null;
+
+function openChat(orderId, userEmail) {
+    // 1. Find the order
+    let allUsers = JSON.parse(localStorage.getItem("ALL_USERS")) || [];
+    const user = allUsers.find((u) => u.email === userEmail);
+    if (!user) return showToast("User not found");
+
+    const order = user.orders.find((o) => o.id === orderId);
+    if (!order) return showToast("Order not found");
+
+    // 2. Set current chat context
+    currentChatOrder = { orderId, userEmail };
+
+    // 3. Update UI
+    const chatOrderIdEl = document.getElementById("chat-order-id");
+    if (chatOrderIdEl) {
+        chatOrderIdEl.innerText = `Order #${orderId}`;
+    }
+    renderChatMessages();
+
+    // 4. Open Modal ONLY if it exists (i.e., not on contact page)
+    const modal = document.getElementById("chat-modal");
+    if (modal) {
+        modal.classList.add("active");
+    }
+}
+
+function closeChat() {
+    const modal = document.getElementById("chat-modal");
+    if (modal) modal.classList.remove("active");
+    currentChatOrder = null;
+}
+
+function renderChatMessages() {
+    if (!currentChatOrder) return;
+
+    // Fetch latest data
+    let allUsers = JSON.parse(localStorage.getItem("ALL_USERS")) || [];
+    const user = allUsers.find((u) => u.email === currentChatOrder.userEmail);
+    const order = user.orders.find((o) => o.id === currentChatOrder.orderId);
+
+    const chatBody = document.getElementById("chat-body");
+    if (!chatBody) return;
+
+    if (!order.chat || order.chat.length === 0) {
+        chatBody.innerHTML =
+            '<p style="text-align:center; color:#888; margin-top:20px;">No messages yet. Start chatting!</p>';
+    } else {
+        chatBody.innerHTML = order.chat
+            .map((msg) => {
+                const isMe =
+                    (msg.sender === "admin" &&
+                        window.location.href.includes("admin.html")) ||
+                    (msg.sender === "user" &&
+                        !window.location.href.includes("admin.html"));
+
+                return `
+                <div class="chat-message ${isMe ? "me" : "other"}">
+                    <div class="msg-bubble">${msg.text}</div>
+                    <div class="msg-time">${new Date(
+                        msg.timestamp
+                    ).toLocaleTimeString([], {
+                        hour: "2-digit",
+                        minute: "2-digit",
+                    })}</div>
+                </div>
+            `;
+            })
+            .join("");
+    }
+
+    // Scroll to bottom
+    chatBody.scrollTop = chatBody.scrollHeight;
+}
+
+function sendChatMessage() {
+    if (!currentChatOrder) return;
+
+    const input = document.getElementById("chat-input");
+    const text = input.value.trim();
+    if (!text) return;
+
+    // Determine sender based on current page
+    const sender = window.location.href.includes("admin.html")
+        ? "admin"
+        : "user";
+
+    // Update Data
+    let allUsers = JSON.parse(localStorage.getItem("ALL_USERS")) || [];
+    const userIndex = allUsers.findIndex(
+        (u) => u.email === currentChatOrder.userEmail
+    );
+    if (userIndex === -1) return;
+
+    const orderIndex = allUsers[userIndex].orders.findIndex(
+        (o) => o.id === currentChatOrder.orderId
+    );
+    if (orderIndex === -1) return;
+
+    if (!allUsers[userIndex].orders[orderIndex].chat) {
+        allUsers[userIndex].orders[orderIndex].chat = [];
+    }
+
+    allUsers[userIndex].orders[orderIndex].chat.push({
+        sender: sender,
+        text: text,
+        timestamp: Date.now(),
+    });
+
+    // Save
+    localStorage.setItem("ALL_USERS", JSON.stringify(allUsers));
+
+    // Sync Current User if it's the user chatting
+    if (sender === "user") {
+        let currentUser = JSON.parse(localStorage.getItem("CURRENT_USER"));
+        if (currentUser && currentUser.email === currentChatOrder.userEmail) {
+            currentUser.orders = allUsers[userIndex].orders;
+            localStorage.setItem("CURRENT_USER", JSON.stringify(currentUser));
+        }
+    }
+
+    input.value = "";
+    renderChatMessages();
+}
+
+// Polling for Notifications
+let lastChatCheck = Date.now();
+
+function pollChatMessages() {
+    if (!currentUser) return;
+
+    let allUsers = JSON.parse(localStorage.getItem("ALL_USERS")) || [];
+    const user = allUsers.find((u) => u.email === currentUser.email);
+    if (!user || !user.orders) return;
+
+    let hasNew = false;
+
+    user.orders.forEach((order) => {
+        if (order.chat) {
+            order.chat.forEach((msg) => {
+                if (msg.sender === "admin" && msg.timestamp > lastChatCheck) {
+                    hasNew = true;
+                }
+            });
+        }
+    });
+
+    if (hasNew) {
+        showToast("New message from Admin!");
+        const badge = document.getElementById("chat-badge");
+        if (badge) {
+            badge.classList.remove("hidden");
+            badge.innerText = "!";
+        }
+        lastChatCheck = Date.now();
+    }
+}
+
+function startChatPolling() {
+    setInterval(pollChatMessages, 5000); // Check every 5 seconds
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+    if (window.location.href.includes("contact.html")) {
+        initContactPageChat();
+    }
+    if (window.location.href.includes("payment.html")) {
+        loadPaymentSummary();
+        loadPaymentAddresses();
+    }
+});
+
+function initContactPageChat() {
+    if (!currentUser) {
+        const chatBody = document.getElementById("chat-body");
+        if (chatBody)
+            chatBody.innerHTML =
+                '<p class="chat-placeholder">Please <a href="#" onclick="openLogin()">login</a> to chat about your orders.</p>';
+        return;
+    }
+
+    if (!currentUser.orders || currentUser.orders.length === 0) {
+        const chatBody = document.getElementById("chat-body");
+        if (chatBody)
+            chatBody.innerHTML =
+                '<p class="chat-placeholder">You have no orders to chat about.</p>';
+        return;
+    }
+
+    // Auto-open latest order
+    const sortedOrders = currentUser.orders
+        .slice()
+        .sort((a, b) => b.timestamp - a.timestamp);
+    const latestOrder = sortedOrders[0];
+
+    // Set current chat context without opening modal
+    currentChatOrder = {
+        orderId: latestOrder.id,
+        userEmail: currentUser.email,
+    };
+
+    const chatOrderIdEl = document.getElementById("chat-order-id");
+    if (chatOrderIdEl)
+        chatOrderIdEl.innerText = `Chat - Order #${latestOrder.id}`;
+    renderChatMessages();
+}
+
+// Payment Page Functions
+function loadPaymentSummary() {
+    const cart = JSON.parse(localStorage.getItem("CART")) || [];
+    const container = document.getElementById("payment-items-list");
+    const totalEl = document.getElementById("payment-total");
+
+    if (!container) return;
+
+    if (cart.length === 0) {
+        container.innerHTML = "<p>Your cart is empty</p>";
+        if (totalEl) totalEl.innerText = "0";
+        return;
+    }
+
+    container.innerHTML = cart
+        .map(
+            (item) => `
+        <div class="payment-item">
+            <span>${item.name} x ${item.quantity}</span>
+            <span>₹${item.price * item.quantity}</span>
+        </div>
+    `
+        )
+        .join("");
+
+    const total = cart.reduce(
+        (sum, item) => sum + item.price * item.quantity,
+        0
+    );
+    if (totalEl) totalEl.innerText = total;
+}
+
+function loadPaymentAddresses() {
+    const container = document.getElementById("payment-address-list");
+    if (!container) return;
+
+    if (
+        !currentUser ||
+        !currentUser.addresses ||
+        currentUser.addresses.length === 0
+    ) {
+        container.innerHTML = `
+            <p>No saved addresses.</p>
+            <button class="cta-button" onclick="openAddressModal()" style="margin-top:10px; font-size:0.9rem;">+ Add Address</button>
+        `;
+        return;
+    }
+
+    container.innerHTML =
+        currentUser.addresses
+            .map(
+                (addr, index) => `
+        <div class="payment-option address-option ${
+            addr.isDefault ? "selected" : ""
+        }" onclick="selectPaymentAddress(${addr.id})">
+            <input type="radio" name="delivery-address" id="addr-${
+                addr.id
+            }" value="${addr.id}" ${addr.isDefault ? "checked" : ""}>
+            <label for="addr-${addr.id}">
+                <div class="method-details">
+                    <span class="method-name">${addr.label}</span>
+                    <span class="method-desc">${addr.text}, ${addr.city}</span>
+                </div>
+            </label>
+        </div>
+    `
+            )
+            .join("") +
+        `
+        <button class="cta-button" onclick="openAddressModal()" style="margin-top:10px; width:100%; background:#6c757d;">+ Add New Address</button>
+    `;
+}
+
+function selectPaymentAddress(id) {
+    document
+        .querySelectorAll(".address-option")
+        .forEach((el) => el.classList.remove("selected"));
+    const radio = document.getElementById(`addr-${id}`);
+    if (radio) {
+        radio.checked = true;
+        radio.closest(".address-option").classList.add("selected");
+    }
+}
+
+function togglePaymentFields() {
+    const method = document.querySelector(
+        'input[name="payment"]:checked'
+    ).value;
+
+    document
+        .querySelectorAll(".payment-details-fields")
+        .forEach((el) => el.classList.add("hidden"));
+
+    if (method === "upi") {
+        const el = document.getElementById("upi-fields");
+        if (el) el.classList.remove("hidden");
+    } else if (method === "card") {
+        const el = document.getElementById("card-fields");
+        if (el) el.classList.remove("hidden");
+    }
+}
+
+function processPayment() {
+    if (!currentUser) {
+        showToast("Please login to place an order");
+        openLogin();
+        return;
+    }
+
+    const cart = JSON.parse(localStorage.getItem("CART")) || [];
+    if (cart.length === 0) {
+        showToast("Your cart is empty");
+        return;
+    }
+
+    // Validate Address
+    const addressInput = document.querySelector(
+        'input[name="delivery-address"]:checked'
+    );
+    if (!addressInput) {
+        showToast("Please select a delivery address");
+        return;
+    }
+
+    const methodInput = document.querySelector('input[name="payment"]:checked');
+    if (!methodInput) {
+        showToast("Please select a payment method");
+        return;
+    }
+    const method = methodInput.value;
+
+    // Simple validation
+    if (method === "upi") {
+        const upiInput = document.querySelector("#upi-fields input");
+        if (upiInput && !upiInput.value)
+            return showToast("Please enter UPI ID");
+    } else if (method === "card") {
+        const cardInput = document.querySelector(
+            '#card-fields input[placeholder="Card Number"]'
+        );
+        if (cardInput && !cardInput.value)
+            return showToast("Please enter Card Number");
+    }
+
+    // Create Order
+    const orderId = "TB-" + Math.floor(Math.random() * 90000 + 10000);
+    const total = document.getElementById("payment-total")
+        ? document.getElementById("payment-total").innerText
+        : "0";
+
+    // Get selected address details
+    const addressId = parseInt(addressInput.value);
+    const selectedAddress = currentUser.addresses.find(
+        (a) => a.id === addressId
+    );
+
+    const newOrder = {
+        id: orderId,
+        items: cart,
+        total: total,
+        date: new Date().toLocaleDateString(),
+        status: "Preparing",
+        timestamp: Date.now(),
+        address: selectedAddress,
+        paymentMethod: method,
+        chat: [],
+    };
+
+    if (!currentUser.orders) currentUser.orders = [];
+    currentUser.orders.unshift(newOrder);
+
+    localStorage.setItem("CURRENT_USER", JSON.stringify(currentUser));
+    updateMasterUserList(currentUser);
+
+    // Clear Cart
+    localStorage.setItem("CART", "[]");
+
+    showToast("Order Placed Successfully!");
+    setTimeout(() => {
+        window.location.href = "profile.html";
+    }, 2000);
 }
