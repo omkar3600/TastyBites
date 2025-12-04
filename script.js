@@ -341,13 +341,56 @@ function updateCartUI() {
         0
     );
     const finalTotal = subtotal - discount; // Simple discount logic for now
+
+    // Update Discount UI
+    const discountRow = document.getElementById("discount-row");
+    const discountAmountEl = document.getElementById("discount-amount");
+    if (discountRow && discountAmountEl) {
+        if (discount > 0) {
+            discountRow.style.display = "block";
+            discountAmountEl.textContent = formatPrice(discount);
+        } else {
+            discountRow.style.display = "none";
+        }
+    }
+
     if (cartTotalElement)
-        cartTotalElement.textContent = formatPrice(finalTotal);
+        cartTotalElement.textContent = formatPrice(
+            finalTotal < 0 ? 0 : finalTotal
+        );
     if (cartCountElement)
         cartCountElement.textContent = cart.reduce(
             (sum, item) => sum + item.quantity,
             0
         );
+}
+
+function applyPromo() {
+    const input = document.getElementById("promo-input");
+    const code = input.value.trim().toUpperCase();
+
+    if (!code) {
+        showToast("Please enter a code");
+        return;
+    }
+
+    const subtotal = cart.reduce(
+        (sum, item) => sum + item.price * item.quantity,
+        0
+    );
+
+    if (code === "TASTY10") {
+        discount = Math.floor(subtotal * 0.1);
+        showToast("Promo Applied: 10% Off!");
+    } else if (code === "SAVE50") {
+        discount = 50;
+        showToast("Promo Applied: ₹50 Off!");
+    } else {
+        discount = 0;
+        showToast("Invalid Promo Code");
+    }
+
+    updateCartUI();
 }
 
 function checkout() {
