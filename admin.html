@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - TastyBites</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+</head>
+<body style="background-color: #f4f7f6;">
+
+    <nav style="background: #333;; color: white;">
+        <div class="logo" style="color: white;">Tasty<span>Bites</span></div>
+        <div class="nav-actions">
+            <span id="admin-name" style="font-weight: 600;">Admin</span>
+            <button onclick="logoutAdmin()" style="background: transparent; border: 1px solid white; color: white; padding: 5px 15px; border-radius: 4px; cursor: pointer;">Logout</button>
+        </div>
+    </nav>
+
+    <div id="admin-login-modal" class="modal active" style="background: #333;;">
+        <div class="modal-content" style="max-width: 350px; text-align: center;">
+            <h2 style="margin-bottom: 20px; color: #333;">Admin Access</h2>
+            <form onsubmit="handleAdminLogin(event)" class="auth-form">
+                <input type="email" id="admin-email" placeholder="admin@tastybites.com" value="admin@tastybites.com" required>
+                <input type="password" id="admin-pass" placeholder="Password (admin123)" value="admin123" required>
+                <button type="submit" class="cta-button">Enter Dashboard</button>
+            </form>
+        </div>
+    </div>
+
+    <section class="admin-section" id="admin-dashboard" style="display: none; padding: 40px 5%;">
+        
+        <div class="admin-stats-grid">
+            <div class="stat-card">
+                <div class="stat-icon" style="background: #e0f7fa; color: #00bcd4;"><span class="material-icons">shopping_bag</span></div>
+                <div>
+                    <h3>Total Orders</h3>
+                    <p id="total-orders">0</p>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon" style="background: #e8f5e9; color: #4caf50;"><span class="material-icons">attach_money</span></div>
+                <div>
+                    <h3>Total Revenue</h3>
+                    <p id="total-revenue">₹0</p>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon" style="background: #fff3e0; color: #ff9800;"><span class="material-icons">pending</span></div>
+                <div>
+                    <h3>Pending</h3>
+                    <p id="pending-orders">0</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="admin-table-container">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h2>Recent Orders</h2>
+                <button onclick="loadAdminDashboard()" style="cursor: pointer; border: none; background: none; color: var(--primary); font-weight: bold;"><span class="material-icons" style="vertical-align: middle;">refresh</span> Refresh Data</button>
+            </div>
+            
+            <table class="admin-table">
+                <thead>
+                    <tr>
+                        <th>Order ID</th>
+                        <th>Customer</th>
+                        <th>Items</th>
+                        <th>Total</th>
+                        <th>Date</th>
+                        <th>Status</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody id="admin-orders-body">
+                    </tbody>
+            </table>
+        </div>
+    </section>
+
+    <div id="toast-box"></div>
+    <script src="script.js"></script>
+</body>
+</html>

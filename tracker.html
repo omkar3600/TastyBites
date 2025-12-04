@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Track Order - TastyBites</title>
+    <link rel="stylesheet" href="style.css" />
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
+</head>
+<body>
+
+    <nav>
+        <div class="hamburger" onclick="toggleMobileMenu()"><span class="material-icons">menu</span></div>
+        <div class="logo" onclick="window.location.href='index.html'">Tasty<span>Bites</span></div>
+        <ul class="nav-links" id="nav-links">
+            <li><a href="index.html">Home</a></li>
+            <li><a href="menu.html">Menu</a></li>
+            <li><a href="contact.html">Contact</a></li>
+        </ul>
+        <div class="nav-actions">
+            <button id="theme-toggle" onclick="toggleTheme()"><span class="material-icons">dark_mode</span></button>
+            <div id="user-action-area">
+                <div class="nav-user-badge" onclick="window.location.href='profile.html'"><span class="material-icons">person</span></div>
+            </div>
+            <div class="cart-icon" onclick="toggleCart()">
+                <span class="material-icons">shopping_cart</span>
+                <span id="cart-count">0</span>
+            </div>
+        </div>
+    </nav>
+
+    <section class="tracker-section" style="min-height: 80vh;">
+        <div style="text-align: center; margin-bottom: 40px;">
+            <h2>Track Your Order</h2>
+            <p id="order-id-display" style="color: var(--primary); font-weight: bold; font-size: 1.2rem;">Order ID: Loading...</p>
+            <p id="order-status-text" style="color: #666; margin-top: 5px;">Current Status: Checking...</p>
+        </div>
+
+        <div class="tracker-container">
+            <div class="progress-track">
+                <ul class="step-wizard-list">
+                    <li class="step-wizard-item" id="step-1">
+                        <span class="progress-count">1</span>
+                        <span class="progress-label">Processing</span>
+                    </li>
+                    <li class="step-wizard-item" id="step-2">
+                        <span class="progress-count">2</span>
+                        <span class="progress-label">Preparing</span>
+                    </li>
+                    <li class="step-wizard-item" id="step-3">
+                        <span class="progress-count">3</span>
+                        <span class="progress-label">Out for Delivery</span>
+                    </li>
+                    <li class="step-wizard-item" id="step-4">
+                        <span class="progress-count">4</span>
+                        <span class="progress-label">Delivered</span>
+                    </li>
+                </ul>
+            </div>
+
+            <div class="order-summary-box">
+                <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #ddd; padding-bottom: 10px; margin-bottom: 15px;">
+                    <h3>Order Summary</h3>
+                    <button onclick="initTracker()" style="background:none; border:none; color:var(--primary); cursor:pointer; font-size:0.9rem;">
+                        <span class="material-icons" style="vertical-align:middle; font-size:1.1rem;">refresh</span> Refresh
+                    </button>
+                </div>
+                
+                <div id="tracker-items" class="tracker-items">
+                    </div>
+                <div class="tracker-total">
+                    <span>Total Amount</span>
+                    <span id="tracker-total-price">₹0</span>
+                </div>
+                <div class="eta-box">
+                    <span class="material-icons">schedule</span> Estimated Arrival: <b id="eta-time" style="margin-left: 5px;">--:--</b>
+                </div>
+                <button class="cta-button" onclick="window.location.href='menu.html'" style="width: 100%; margin-top: 20px;">Order More</button>
+            </div>
+        </div>
+    </section>
+
+    <footer>
+        <div class="footer-bottom">
+            <p>&copy; 2025 TastyBites Food Club. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <div id="toast-box"></div>
+    <script src="script.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            initTracker();
+            // Optional: Auto-refresh every 5 seconds to catch Admin updates
+            setInterval(initTracker, 5000); 
+        });
+    </script>
+</body>
+</html>
