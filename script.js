@@ -1,23 +1,118 @@
 // --- 1. MOCK DATA (Menu Items) ---
 const menuItems = [
-    { id: 1, name: "Classic Burger", category: "burger", price: 149, image: "./assets/burger1.jpeg" },
-    { id: 2, name: "Cheese Meltdown Burger", category: "burger", price: 199, image: "./assets/burger2.jpeg" },
-    { id: 3, name: "Pepperoni Pizza", category: "pizza", price: 399, image: "./assets/pizza1.jpeg" },
-    { id: 4, name: "Veggie Supreme Pizza", category: "pizza", price: 349, image: "./assets/pizza2.jpeg" },
-    { id: 5, name: "Chicken Biryani", category: "biryani", price: 299, image: "./assets/biryani1.jpeg" },
-    { id: 6, name: "Hyderabadi Veg Biryani", category: "biryani", price: 249, image: "./assets/biryani2.jpeg" },
-    { id: 7, name: "Veg Meal", category: "meal", price: 450, image: "./assets/meal1.jpeg" },
-    { id: 8, name: "Punjabi Meal", category: "meal", price: 280, image: "./assets/meal2.jpeg" },
-    { id: 9, name: "Fried Chicken", category: "fastfood", price: 599, image: "./assets/fastf1.jpeg" },
-    { id: 10, name: "Chicken Sauce", category: "fastfood", price: 499, image: "./assets/fastf2.jpeg" },
-    { id: 11, name: "Club Sandwich", category: "sandwich", price: 129, image: "./assets/sand1.jpeg" },
-    { id: 12, name: "Grilled Cheese Sandwich", category: "sandwich", price: 99, image: "./assets/sand2.jpeg" },
-    { id: 13, name: "Samosa", category: "snacks", price: 89, image: "./assets/snacks1.jpeg" },
-    { id: 14, name: "Kachori", category: "snacks", price: 99, image: "./assets/snacks2.jpeg" },
-    { id: 15, name: "Cocktail", category: "beverages", price: 150, image: "./assets/bev1.jpeg" },
-    { id: 16, name: "Cola", category: "beverages", price: 120, image: "./assets/bev2.jpeg" }
+    {
+        id: 1,
+        name: "Classic Burger",
+        category: "burger",
+        price: 149,
+        image: "./assets/burger1.jpeg",
+    },
+    {
+        id: 2,
+        name: "Cheese Meltdown Burger",
+        category: "burger",
+        price: 199,
+        image: "./assets/burger2.jpeg",
+    },
+    {
+        id: 3,
+        name: "Pepperoni Pizza",
+        category: "pizza",
+        price: 399,
+        image: "./assets/pizza1.jpeg",
+    },
+    {
+        id: 4,
+        name: "Veggie Supreme Pizza",
+        category: "pizza",
+        price: 349,
+        image: "./assets/pizza2.jpeg",
+    },
+    {
+        id: 5,
+        name: "Chicken Biryani",
+        category: "biryani",
+        price: 299,
+        image: "./assets/biryani1.jpeg",
+    },
+    {
+        id: 6,
+        name: "Hyderabadi Veg Biryani",
+        category: "biryani",
+        price: 249,
+        image: "./assets/biryani2.jpeg",
+    },
+    {
+        id: 7,
+        name: "Veg Meal",
+        category: "meal",
+        price: 450,
+        image: "./assets/meal1.jpeg",
+    },
+    {
+        id: 8,
+        name: "Punjabi Meal",
+        category: "meal",
+        price: 280,
+        image: "./assets/meal2.jpeg",
+    },
+    {
+        id: 9,
+        name: "Fried Chicken",
+        category: "fastfood",
+        price: 599,
+        image: "./assets/fastf1.jpeg",
+    },
+    {
+        id: 10,
+        name: "Chicken Sauce",
+        category: "fastfood",
+        price: 499,
+        image: "./assets/fastf2.jpeg",
+    },
+    {
+        id: 11,
+        name: "Club Sandwich",
+        category: "sandwich",
+        price: 129,
+        image: "./assets/sand1.jpeg",
+    },
+    {
+        id: 12,
+        name: "Grilled Cheese Sandwich",
+        category: "sandwich",
+        price: 99,
+        image: "./assets/sand2.jpeg",
+    },
+    {
+        id: 13,
+        name: "Samosa",
+        category: "snacks",
+        price: 89,
+        image: "./assets/snacks1.jpeg",
+    },
+    {
+        id: 14,
+        name: "Kachori",
+        category: "snacks",
+        price: 99,
+        image: "./assets/snacks2.jpeg",
+    },
+    {
+        id: 15,
+        name: "Cocktail",
+        category: "beverages",
+        price: 150,
+        image: "./assets/bev1.jpeg",
+    },
+    {
+        id: 16,
+        name: "Cola",
+        category: "beverages",
+        price: 120,
+        image: "./assets/bev2.jpeg",
+    },
 ];
-
 
 // --- 2. STATE MANAGEMENT ---
 let cart = JSON.parse(localStorage.getItem("CART")) || [];
@@ -261,7 +356,11 @@ function checkout() {
     saveCart();
     updateCartUI();
     toggleCart();
-    window.location.href = "tracker.html";
+
+    // Redirect to payment page instead of tracker directly
+    // Store the order temporarily if needed, or just pass the total via localStorage
+    localStorage.setItem("cartTotal", total);
+    window.location.href = "payment.html";
 }
 
 // --- 6. MENU & FAVORITES LOGIC ---
@@ -782,4 +881,81 @@ function updateOrderStatus(userEmail, orderId) {
             loadAdminDashboard(); // Refresh UI
         }
     }
+}
+
+// ==========================================================================
+// PAYMENT PAGE LOGIC
+// ==========================================================================
+
+let selectedPaymentMethod = null;
+
+function selectPayment(method) {
+    selectedPaymentMethod = method;
+
+    // UI Updates
+    document
+        .querySelectorAll(".payment-option")
+        .forEach((opt) => opt.classList.remove("selected"));
+    document
+        .querySelector(`input[value="${method}"]`)
+        .closest(".payment-option")
+        .classList.add("selected");
+
+    // Show/Hide Details
+    document
+        .querySelectorAll(".payment-details")
+        .forEach((el) => el.classList.add("hidden"));
+    document.getElementById(`${method}-details`).classList.remove("hidden");
+}
+
+function processPayment() {
+    if (!selectedPaymentMethod) {
+        showToast("Please select a payment method");
+        return;
+    }
+
+    if (selectedPaymentMethod === "upi") {
+        const upiId = document.getElementById("upi-id").value;
+        // Basic validation
+        if (!upiId && !document.querySelector(".qr-placeholder")) {
+            // allow empty for demo if they "scanned"
+        }
+    }
+
+    // Simulate Processing
+    const btn = document.querySelector(".pay-btn");
+    const originalText = btn.innerHTML;
+    btn.innerHTML = '<i class="fa fa-spinner fa-spin"></i> Processing...';
+    btn.disabled = true;
+
+    setTimeout(() => {
+        // Update the active order status to "Paid" or just move to tracker
+        let activeOrder = JSON.parse(localStorage.getItem("ACTIVE_ORDER"));
+        if (activeOrder) {
+            activeOrder.paymentMethod = selectedPaymentMethod;
+            activeOrder.status = "Preparing"; // Move to next stage after payment
+            localStorage.setItem("ACTIVE_ORDER", JSON.stringify(activeOrder));
+
+            // Update in history as well
+            let currentUser = JSON.parse(localStorage.getItem("CURRENT_USER"));
+            if (currentUser) {
+                const orderIdx = currentUser.orders.findIndex(
+                    (o) => o.id === activeOrder.id
+                );
+                if (orderIdx !== -1) {
+                    currentUser.orders[orderIdx] = activeOrder;
+                    localStorage.setItem(
+                        "CURRENT_USER",
+                        JSON.stringify(currentUser)
+                    );
+                    updateMasterUserList(currentUser);
+                }
+            }
+        }
+
+        showToast("Payment Successful!");
+        setTimeout(() => {
+            window.location.href = "tracker.html";
+        }, 1000);
+    }, 2000);
 }
