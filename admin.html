@@ -17,33 +17,36 @@
     </head>
     <body style="background-color: #f4f7f6">
         <!-- Navigation Section -->
-        <nav style="background: #333; color: white">
-            <div class="logo" style="color: white">Tasty<span>Bites</span></div>
-            <span id="admin-name" style="font-weight: 600">Admin Panel</span>
-            <div class="nav-actions">
+        <nav
+            class="admin-nav"
+            style="background: #333; color: white; padding: 10px 20px"
+        >
+            <div
+                class="logo"
+                style="color: white; font-size: 1.5rem; font-weight: 800"
+            >
+                Tasty<span>Bites</span>
+            </div>
+            <span id="admin-name" style="font-weight: 600; font-size: 1.2rem"
+                >Admin Panel</span
+            >
+            <div class="nav-actions" style="display: flex; gap: 15px">
                 <button
-                    class="admin-user-btn"
+                    class="admin-icon-btn"
                     onclick="window.location.href='index.html'"
+                    title="Home"
                 >
-                    Home
+                    <span class="material-icons">home</span>
                 </button>
                 <button
+                    class="admin-icon-btn"
                     onclick="logoutAdmin()"
-                    style="
-                        background: transparent;
-                        border: 1px solid white;
-                        color: white;
-                        padding: 5px 15px;
-                        border-radius: 4px;
-                        cursor: pointer;
-                    "
+                    title="Logout"
                 >
-                    Logout
+                    <span class="material-icons">logout</span>
                 </button>
             </div>
         </nav>
-
-        <!-- Modals/Overlays -->
         <div
             id="admin-login-modal"
             class="modal active"
