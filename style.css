@@ -143,7 +143,7 @@ nav {
     cursor: pointer;
     font-weight: 600;
     font-size: 0.9rem;
-    transition: all 0.4s ease;
+    transition: all 0.3s ease;
 }
 .login-btn:hover {
     background-color: var(--primary);
@@ -200,7 +200,7 @@ nav {
 .hero-content {
     max-width: 900px;
     padding: 50px;
-    animation: fadeInUp 1.5s ease-out;
+    animation: fadeInUp 1s ease-out;
     background-color: #1e1e1eb9;
     border-radius: 50px;
 }
@@ -266,7 +266,7 @@ nav {
         rgba(255, 255, 255, 0.2),
         transparent
     );
-    transition: 0.5s;
+    transition: 0.3s;
 }
 .cta-button:hover::before {
     left: 100%;
