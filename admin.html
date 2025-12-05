@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+    <!-- Header Section -->
     <head>
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -15,6 +16,7 @@
         />
     </head>
     <body style="background-color: #f4f7f6">
+        <!-- Navigation Section -->
         <nav style="background: #333; color: white">
             <div class="logo" style="color: white">Tasty<span>Bites</span></div>
             <div class="nav-actions">
@@ -41,6 +43,7 @@
             </div>
         </nav>
 
+        <!-- Modals/Overlays -->
         <div
             id="admin-login-modal"
             class="modal active"
@@ -78,7 +81,7 @@
             id="admin-dashboard"
             style="display: none; display: flex; min-height: 100vh"
         >
-            <!-- Sidebar -->
+            <!-- Sidebar Navigation -->
             <aside
                 class="admin-sidebar"
                 style="
@@ -149,7 +152,7 @@
                 </ul>
             </aside>
 
-            <!-- Main Content -->
+            <!-- Dashboard Content -->
             <main
                 class="admin-main"
                 style="
@@ -159,7 +162,7 @@
                     overflow-y: auto;
                 "
             >
-                <!-- ORDERS SECTION -->
+                <!-- Order Management Section -->
                 <section id="section-orders" class="admin-section-content">
                     <h2 style="margin-bottom: 20px">Order Management</h2>
                     <div class="admin-stats-grid">
@@ -246,7 +249,7 @@
                     </div>
                 </section>
 
-                <!-- CUSTOMERS SECTION -->
+                <!-- Customer Data Section -->
                 <section
                     id="section-customers"
                     class="admin-section-content"
@@ -269,7 +272,7 @@
                     </div>
                 </section>
 
-                <!-- PRODUCTS SECTION -->
+                <!-- Product Management Section -->
                 <section
                     id="section-products"
                     class="admin-section-content"
@@ -367,6 +370,7 @@
             </div>
         </div>
 
+        <!-- Chat Modal -->
         <div id="chat-modal" class="modal">
             <div class="modal-content chat-modal-content">
                 <span class="close-modal" onclick="closeChat()">&times;</span>
@@ -389,6 +393,7 @@
         </div>
 
         <div id="toast-box"></div>
+        <!-- Scripts -->
         <script src="script.js"></script>
     </body>
 </html>

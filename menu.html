@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+    <!-- Header Section -->
     <head>
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -24,6 +25,7 @@
         />
     </head>
     <body>
+        <!-- Navigation Section -->
         <nav>
             <div class="hamburger" onclick="toggleMobileMenu()">
                 <span class="material-icons">menu</span>
@@ -52,6 +54,7 @@
                 </div>
             </div>
         </nav>
+        <!-- Menu Section -->
         <section id="menu" class="menu-section">
             <h2>Our Menu</h2>
 
@@ -101,6 +104,7 @@
             <div class="menu-grid" id="menu-container"></div>
         </section>
 
+        <!-- Product Modal -->
         <div id="product-modal" class="modal">
             <div class="modal-content product-modal-content">
                 <span class="close-modal" onclick="closeProductModal()"
@@ -110,6 +114,7 @@
             </div>
         </div>
 
+        <!-- Cart Sidebar -->
         <div id="cart-sidebar" class="cart-sidebar">
             <div class="cart-header">
                 <h3>Your Cart</h3>
@@ -143,6 +148,7 @@
             </div>
         </div>
 
+        <!-- Modals/Overlays -->
         <div id="overlay" onclick="toggleCart()"></div>
 
         <div id="auth-modal" class="modal">
@@ -189,6 +195,7 @@
             </div>
         </div>
 
+        <!-- Footer Section -->
         <footer>
             <div class="footer-content">
                 <div class="footer-col">
@@ -268,6 +275,7 @@
             </div>
         </footer>
 
+        <!-- Chat Modal -->
         <div id="chat-modal" class="modal">
             <div class="modal-content chat-modal-content">
                 <span class="close-modal" onclick="closeChat()">&times;</span>
@@ -291,6 +299,7 @@
 
         <div id="toast-box"></div>
 
+        <!-- Scripts -->
         <script src="script.js"></script>
     </body>
 </html>
