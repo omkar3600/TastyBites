@@ -290,9 +290,6 @@
                         "
                     >
                         <h2>Product Management</h2>
-                        <button class="cta-button" onclick="openProductModal()">
-                            + Add Product
-                        </button>
                     </div>
                     <div class="admin-table-container">
                         <table class="admin-table">
@@ -310,67 +307,6 @@
                     </div>
                 </section>
             </main>
-        </div>
-
-        <!-- Product Modal -->
-        <div id="product-modal-admin" class="modal">
-            <div class="modal-content">
-                <span class="close-modal" onclick="closeProductModalAdmin()"
-                    >&times;</span
-                >
-                <h2 id="product-modal-title">Add Product</h2>
-                <form id="product-form" onsubmit="handleProductSubmit(event)">
-                    <input type="hidden" id="prod-id" />
-                    <div class="form-group">
-                        <label>Product Name</label>
-                        <input type="text" id="prod-name" required />
-                    </div>
-                    <div class="form-group">
-                        <label>Category</label>
-                        <select
-                            id="prod-category"
-                            style="
-                                width: 100%;
-                                padding: 10px;
-                                border: 1px solid #ddd;
-                                border-radius: 5px;
-                            "
-                        >
-                            <option value="burger">Burger</option>
-                            <option value="pizza">Pizza</option>
-                            <option value="biryani">Biryani</option>
-                            <option value="meal">Meal</option>
-                            <option value="fastfood">Fast Food</option>
-                            <option value="sandwich">Sandwich</option>
-                            <option value="snacks">Snacks</option>
-                            <option value="beverages">Beverages</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label>Price (₹)</label>
-                        <input type="number" id="prod-price" required />
-                    </div>
-                    <div class="form-group">
-                        <label>Image URL</label>
-                        <input
-                            type="text"
-                            id="prod-img-url"
-                            placeholder="https://..."
-                        />
-                    </div>
-                    <div class="form-group">
-                        <label>Or Upload Image</label>
-                        <input
-                            type="file"
-                            id="prod-img-file"
-                            accept="image/*"
-                        />
-                    </div>
-                    <button type="submit" class="cta-button full-width">
-                        Save Product
-                    </button>
-                </form>
-            </div>
         </div>
 
         <!-- Chat Modal -->

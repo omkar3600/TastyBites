@@ -1130,11 +1130,6 @@ function loadProductsSection() {
             <td>${item.category}</td>
             <td>₹${formatPrice(item.price)}</td>
             <td>
-                <button class="btn-save" onclick="openProductModal(${
-                    item.id
-                })" style="border-radius: 50%; width: 40px; height: 40px; padding: 0; display: inline-flex; align-items: center; justify-content: center;" title="Edit">
-                    <span class="material-icons">edit</span>
-                </button>
                 <button class="btn-delete" onclick="deleteProduct(${
                     item.id
                 })" style="margin-left:5px; border-radius: 50%; width: 40px; height: 40px; padding: 0; display: inline-flex; align-items: center; justify-content: center;" title="Delete">
@@ -1147,79 +1142,7 @@ function loadProductsSection() {
 }
 
 // 8. Product Management (CRUD)
-function openProductModal(productId = null) {
-    const modal = document.getElementById("product-modal-admin");
-    if (!modal) return;
-
-    const title = document.getElementById("product-modal-title");
-    const form = document.getElementById("product-form");
-
-    if (productId) {
-        // Edit Mode
-        const items = getMenuItems();
-        const product = items.find((i) => i.id === productId);
-        if (!product) return;
-
-        title.innerText = "Edit Product";
-        document.getElementById("prod-id").value = product.id;
-        document.getElementById("prod-name").value = product.name;
-        document.getElementById("prod-category").value = product.category;
-        document.getElementById("prod-price").value = product.price;
-        document.getElementById("prod-img-url").value = product.image;
-    } else {
-        // Add Mode
-        title.innerText = "Add Product";
-        form.reset();
-        document.getElementById("prod-id").value = "";
-    }
-
-    modal.style.display = "block";
-}
-
-function closeProductModalAdmin() {
-    const modal = document.getElementById("product-modal-admin");
-    if (modal) modal.style.display = "none";
-}
-
-function handleProductSubmit(e) {
-    e.preventDefault();
-
-    const idStr = document.getElementById("prod-id").value;
-    const name = document.getElementById("prod-name").value;
-    const category = document.getElementById("prod-category").value;
-    const price = parseInt(document.getElementById("prod-price").value);
-    const imgUrl = document.getElementById("prod-img-url").value;
-    const fileInput = document.getElementById("prod-img-file");
-
-    let image = imgUrl;
-    if (!image && fileInput.files.length > 0) {
-        // Mock: Use a placeholder or object URL (temporary)
-        image = "./assets/burger1.jpeg"; // Fallback/Mock
-    }
-    if (!image) image = "./assets/burger1.jpeg"; // Default
-
-    let items = getMenuItems();
-
-    if (idStr) {
-        // Update
-        const id = parseInt(idStr);
-        const index = items.findIndex((i) => i.id === id);
-        if (index !== -1) {
-            items[index] = { id, name, category, price, image };
-            showToast("Product Updated!");
-        }
-    } else {
-        // Create
-        const newId =
-            items.length > 0 ? Math.max(...items.map((i) => i.id)) + 1 : 1;
-        items.push({ id: newId, name, category, price, image });
-        showToast("Product Added!");
-    }
-
-    localStorage.setItem("MENU_ITEMS", JSON.stringify(items));
-    closeProductModalAdmin();
-    loadProductsSection();
-}
+// Product modal functions removed
 
 function deleteProduct(id) {
     if (!confirm("Delete this product?")) return;
@@ -2036,10 +1959,6 @@ async function loadAllComponents() {
         { id: "cart-sidebar-placeholder", path: "elements/cart-sidebar.html" },
         { id: "auth-modal-placeholder", path: "elements/auth-modal.html" },
         { id: "chat-modal-placeholder", path: "elements/chat-modal.html" },
-        {
-            id: "product-modal-placeholder",
-            path: "elements/product-modal.html",
-        },
     ];
 
     await Promise.all(components.map((c) => loadComponent(c.id, c.path)));
