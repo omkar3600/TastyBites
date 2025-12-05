@@ -143,7 +143,7 @@ nav {
     cursor: pointer;
     font-weight: 600;
     font-size: 0.9rem;
-    transition: all 0.4s ease;
+    transition: all 0.3s ease;
 }
 .login-btn:hover {
     background-color: var(--primary);
@@ -200,7 +200,7 @@ nav {
 .hero-content {
     max-width: 900px;
     padding: 50px;
-    animation: fadeInUp 1.5s ease-out;
+    animation: fadeInUp 1s ease-out;
     background-color: #1e1e1eb9;
     border-radius: 50px;
 }
@@ -266,7 +266,7 @@ nav {
         rgba(255, 255, 255, 0.2),
         transparent
     );
-    transition: 0.5s;
+    transition: 0.3s;
 }
 .cta-button:hover::before {
     left: 100%;
@@ -2278,13 +2278,13 @@ body.dark-mode .chat-message.other .msg-bubble {
     position: fixed;
     bottom: 30px;
     right: 30px;
-    width: 60px;
-    height: 60px;
-    background: var(--primary);
-    color: white;
+    width: 50px;
+    height: 50px;
+    background: linear-gradient(220deg, #ff0000, #ffe900fc);
+    color: #370000;
     border: none;
     border-radius: 50%;
-    box-shadow: 0 4px 15px rgba(255, 99, 71, 0.4);
+    box-shadow: 0px 0px 20px rgb(255 100 0 / 100%);
     cursor: pointer;
     display: flex;
     align-items: center;
