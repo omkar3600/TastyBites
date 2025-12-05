@@ -15,36 +15,8 @@
         />
     </head>
     <body>
-        <nav>
-            <div class="hamburger" onclick="toggleMobileMenu()">
-                <span class="material-icons">menu</span>
-            </div>
-            <div class="logo" onclick="window.location.href='index.html'">
-                Tasty<span>Bites</span>
-            </div>
-            <ul class="nav-links" id="nav-links">
-                <li><a href="index.html">Home</a></li>
-                <li><a href="menu.html">Menu</a></li>
-                <li><a href="contact.html">Contact</a></li>
-            </ul>
-            <div class="nav-actions">
-                <button id="theme-toggle" onclick="toggleTheme()">
-                    <span class="material-icons">dark_mode</span>
-                </button>
-                <div id="user-action-area">
-                    <div
-                        class="nav-user-badge"
-                        onclick="window.location.href='profile.html'"
-                    >
-                        <span class="material-icons">person</span>
-                    </div>
-                </div>
-                <div class="cart-icon" onclick="toggleCart()">
-                    <span class="material-icons">shopping_cart</span>
-                    <span id="cart-count">0</span>
-                </div>
-            </div>
-        </nav>
+        <!-- Navigation Section -->
+        <div id="navbar-placeholder"></div>
 
         <section class="tracker-section" style="min-height: 80vh">
             <div style="text-align: center; margin-bottom: 40px">
@@ -141,11 +113,14 @@
             </div>
         </section>
 
-        <footer>
-            <div class="footer-bottom">
-                <p>&copy; 2025 TastyBites Food Club. All rights reserved.</p>
-            </div>
-        </footer>
+        <!-- Footer Section -->
+        <div id="footer-placeholder"></div>
+
+        <!-- Cart Sidebar -->
+        <div id="cart-sidebar-placeholder"></div>
+
+        <!-- Auth Modal -->
+        <div id="auth-modal-placeholder"></div>
 
         <div id="toast-box"></div>
         <script src="script.js"></script>

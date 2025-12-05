@@ -1,0 +1,26 @@
+<nav>
+    <div class="hamburger" onclick="toggleMobileMenu()">
+        <span class="material-icons">menu</span>
+    </div>
+    <div class="logo" onclick="window.location.href='index.html'">
+        Tasty<span>Bites</span>
+    </div>
+    <ul class="nav-links" id="nav-links">
+        <li><a href="index.html">Home</a></li>
+        <li><a href="menu.html">Menu</a></li>
+        <li><a href="contact.html">Contact</a></li>
+    </ul>
+    <div class="nav-actions">
+        <button id="theme-toggle" onclick="toggleTheme()">
+            <span class="material-icons">dark_mode</span>
+        </button>
+        <div id="user-action-area">
+            <button class="login-btn" onclick="openLogin()">Login</button>
+        </div>
+
+        <div class="cart-icon" onclick="toggleCart()">
+            <span class="material-icons">shopping_cart</span>
+            <span id="cart-count">0</span>
+        </div>
+    </div>
+</nav>

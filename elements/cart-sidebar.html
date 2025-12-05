@@ -1,0 +1,31 @@
+<div id="cart-sidebar" class="cart-sidebar">
+    <div class="cart-header">
+        <h3>Your Cart</h3>
+        <span class="material-icons close-cart" onclick="toggleCart()"
+            >close</span
+        >
+    </div>
+    <div id="cart-items" class="cart-items">
+        <p class="empty-msg">Your cart is empty.</p>
+    </div>
+    <div class="cart-footer">
+        <div class="promo-code-section">
+            <input
+                type="text"
+                id="promo-input"
+                placeholder="Promo Code (Try TASTY10)"
+            />
+            <button onclick="applyPromo()">Apply</button>
+        </div>
+        <div
+            class="discount-row"
+            id="discount-row"
+            style="display: none; color: green; font-size: 0.9rem"
+        >
+            Discount: -₹<span id="discount-amount">0</span>
+        </div>
+        <div class="total">Total: ₹<span id="cart-total">0</span></div>
+        <button class="checkout-btn" onclick="checkout()">Checkout</button>
+    </div>
+</div>
+<div id="overlay" onclick="toggleCart()"></div>

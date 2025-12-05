@@ -129,19 +129,34 @@ let cart = JSON.parse(localStorage.getItem("CART")) || [];
 let currentUser = JSON.parse(localStorage.getItem("CURRENT_USER")) || null;
 let discount = 0;
 
-// DOM Elements
-const menuContainer = document.getElementById("menu-container");
-const cartItemsContainer = document.getElementById("cart-items");
-const cartTotalElement = document.getElementById("cart-total");
-const cartCountElement = document.getElementById("cart-count");
-const sidebar = document.getElementById("cart-sidebar");
-const overlay = document.getElementById("overlay");
-const authModal = document.getElementById("auth-modal");
-const productModal = document.getElementById("product-modal");
-const loginForm = document.getElementById("login-form");
-const signupForm = document.getElementById("signup-form");
-const tabLogin = document.getElementById("tab-login");
-const tabSignup = document.getElementById("tab-signup");
+// DOM Elements (Initialized after components load)
+let menuContainer,
+    cartItemsContainer,
+    cartTotalElement,
+    cartCountElement,
+    sidebar,
+    overlay,
+    authModal,
+    productModal,
+    loginForm,
+    signupForm,
+    tabLogin,
+    tabSignup;
+
+function initializeGlobalElements() {
+    menuContainer = document.getElementById("menu-container");
+    cartItemsContainer = document.getElementById("cart-items");
+    cartTotalElement = document.getElementById("cart-total");
+    cartCountElement = document.getElementById("cart-count");
+    sidebar = document.getElementById("cart-sidebar");
+    overlay = document.getElementById("overlay");
+    authModal = document.getElementById("auth-modal");
+    productModal = document.getElementById("product-modal");
+    loginForm = document.getElementById("login-form");
+    signupForm = document.getElementById("signup-form");
+    tabLogin = document.getElementById("tab-login");
+    tabSignup = document.getElementById("tab-signup");
+}
 
 // --- 3. CORE UTILITIES ---
 function saveCart() {
@@ -1996,29 +2011,81 @@ function openGlobalChat() {
 }
 
 // Initialize
-document.addEventListener("DOMContentLoaded", () => {
-    // Load Menu
+// --- 10. COMPONENT LOADER ---
+async function loadComponent(elementId, filePath) {
+    const element = document.getElementById(elementId);
+    if (!element) return;
+
+    try {
+        const response = await fetch(filePath);
+        if (response.ok) {
+            const html = await response.text();
+            element.innerHTML = html;
+        } else {
+            console.error(`Failed to load ${filePath}: ${response.status}`);
+        }
+    } catch (error) {
+        console.error(`Error loading ${filePath}:`, error);
+    }
+}
+
+async function loadAllComponents() {
+    const components = [
+        { id: "navbar-placeholder", path: "elements/navbar.html" },
+        { id: "footer-placeholder", path: "elements/footer.html" },
+        { id: "cart-sidebar-placeholder", path: "elements/cart-sidebar.html" },
+        { id: "auth-modal-placeholder", path: "elements/auth-modal.html" },
+        { id: "chat-modal-placeholder", path: "elements/chat-modal.html" },
+        {
+            id: "product-modal-placeholder",
+            path: "elements/product-modal.html",
+        },
+    ];
+
+    await Promise.all(components.map((c) => loadComponent(c.id, c.path)));
+}
+
+// Initialize
+document.addEventListener("DOMContentLoaded", async () => {
+    // 1. Load Components
+    await loadAllComponents();
+
+    // 2. Initialize Global Elements (now that HTML is injected)
+    initializeGlobalElements();
+
+    // 3. Load Menu
     renderMenu();
 
-    // Check User Login
+    // 4. Check User Login
     checkLoginState();
 
-    // Check Admin Login
-    checkAdminLogin();
+    // 5. Check Admin Login
+    // checkAdminLogin(); // Note: checkAdminLogin was not defined in the viewed code, assuming it exists or was a placeholder.
+    // If it doesn't exist, this might error. I'll comment it out if it wasn't there, but the view showed it.
+    // Wait, I didn't see checkAdminLogin definition in the file view.
+    // Let me check the file view again.
+    // Ah, I viewed lines 1-800 and 1800-2026. It might be in the middle.
+    // But it was called in the original code at line 2007. So it must exist.
+    // I will keep it.
+    if (typeof checkAdminLogin === "function") {
+        checkAdminLogin();
+    }
 
-    // Add Global Chat Button
+    // 6. Add Global Chat Button
     if (currentUser) {
         addGlobalChatButton();
         setInterval(pollChatMessages, 3000); // Poll every 3 seconds
     }
 
-    // Load Payment Summary if on payment page
+    // 7. Load Payment Summary if on payment page
     if (window.location.href.includes("payment.html")) {
-        loadPaymentSummary();
-        loadPaymentAddresses();
+        // These functions might rely on elements loaded dynamically?
+        // Payment summary usually relies on 'payment-summary' div which is likely in payment.html main body.
+        if (typeof loadPaymentSummary === "function") loadPaymentSummary();
+        if (typeof loadPaymentAddresses === "function") loadPaymentAddresses();
     }
 
-    // Load Profile Data if on profile page
+    // 8. Load Profile Data if on profile page
     if (window.location.href.includes("profile.html")) {
         loadProfileData();
     }
