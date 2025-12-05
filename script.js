@@ -114,6 +114,16 @@ const menuItems = [
     },
 ];
 
+// Initialize Menu from LocalStorage if available
+let storedMenu = localStorage.getItem("MENU_ITEMS");
+if (!storedMenu) {
+    localStorage.setItem("MENU_ITEMS", JSON.stringify(menuItems));
+}
+
+function getMenuItems() {
+    return JSON.parse(localStorage.getItem("MENU_ITEMS")) || menuItems;
+}
+
 // --- 2. STATE MANAGEMENT ---
 let cart = JSON.parse(localStorage.getItem("CART")) || [];
 let currentUser = JSON.parse(localStorage.getItem("CURRENT_USER")) || null;
@@ -275,7 +285,8 @@ function logoutUser() {
 // --- 5. CART & CHECKOUT LOGIC ---
 
 function addToCart(id) {
-    const item = menuItems.find((p) => p.id === id);
+    const items = getMenuItems();
+    const item = items.find((p) => p.id === id);
     const existingItem = cart.find((i) => i.id === id);
     if (existingItem) existingItem.quantity++;
     else cart.push({ ...item, quantity: 1 });
@@ -436,7 +447,7 @@ function toggleFavorite(id) {
     if (window.location.href.includes("profile.html")) loadProfileData();
 }
 
-function renderMenu(items = menuItems) {
+function renderMenu(items = getMenuItems()) {
     if (!menuContainer) return;
 
     const userFavs = currentUser ? currentUser.favorites : [];
@@ -491,13 +502,13 @@ function filterMenu(category) {
             btn.classList.add("active");
     });
 
-    let items;
+    let items = getMenuItems();
     if (category === "all") {
-        items = menuItems;
+        // items is already all items
     } else if (category === "favorites") {
-        items = menuItems.filter((i) => currentUser.favorites.includes(i.id));
+        items = items.filter((i) => currentUser.favorites.includes(i.id));
     } else {
-        items = menuItems.filter((i) => i.category === category);
+        items = items.filter((i) => i.category === category);
     }
 
     renderMenu(items);
@@ -506,7 +517,9 @@ function filterMenu(category) {
 function searchMenu() {
     if (!menuContainer) return;
     const query = document.getElementById("search-input").value.toLowerCase();
-    const items = menuItems.filter((i) => i.name.toLowerCase().includes(query));
+    const items = getMenuItems().filter((i) =>
+        i.name.toLowerCase().includes(query)
+    );
     renderMenu(items);
 }
 
@@ -820,23 +833,48 @@ document.addEventListener("DOMContentLoaded", () => {
 // ==========================================================================
 
 // 1. Admin Login
+// 1. Admin Login
 function handleAdminLogin(e) {
     e.preventDefault();
     const email = document.getElementById("admin-email").value;
     const pass = document.getElementById("admin-pass").value;
 
     if (email === "admin@tastybites.com" && pass === "admin123") {
+        localStorage.setItem("ADMIN_LOGGED_IN", "true"); // Persist login
         document.getElementById("admin-login-modal").style.display = "none";
-        document.getElementById("admin-dashboard").style.display = "block";
-        loadAdminDashboard();
+        const dashboard = document.getElementById("admin-dashboard");
+        if (dashboard) {
+            dashboard.style.display = "flex"; // Use flex for layout
+            loadAdminDashboard();
+        }
         showToast("Welcome, Admin!");
     } else {
         showToast("Invalid Admin Credentials");
     }
 }
 
+function checkAdminLogin() {
+    if (window.location.href.includes("admin.html")) {
+        const isLoggedIn = localStorage.getItem("ADMIN_LOGGED_IN") === "true";
+        const modal = document.getElementById("admin-login-modal");
+        const dashboard = document.getElementById("admin-dashboard");
+
+        if (isLoggedIn) {
+            if (modal) modal.style.display = "none";
+            if (dashboard) {
+                dashboard.style.display = "flex";
+                loadAdminDashboard();
+            }
+        } else {
+            if (modal) modal.style.display = "flex";
+            if (dashboard) dashboard.style.display = "none";
+        }
+    }
+}
+
 function logoutAdmin() {
-    location.reload(); // Simple reload to reset state
+    localStorage.removeItem("ADMIN_LOGGED_IN");
+    window.location.reload();
 }
 
 // 2. Load Dashboard Data
@@ -901,15 +939,23 @@ function loadAdminDashboard() {
                             order.id
                         }', '${
                     user.email
-                }')" style="background: #17a2b8; margin-bottom: 5px;">Chat</button>
+                }')" style="background: #17a2b8; margin-bottom: 5px; border-radius: 50%; width: 40px; height: 40px; padding: 0; display: inline-flex; align-items: center; justify-content: center;" title="Chat">
+                            <span class="material-icons">chat_bubble</span>
+                        </button>
                         <button class="btn-save" onclick="updateOrderStatus('${
                             user.email
-                        }', '${order.id}')">Update</button>
+                        }', '${
+                    order.id
+                }')" style="border-radius: 50%; width: 40px; height: 40px; padding: 0; display: inline-flex; align-items: center; justify-content: center;" title="Update Status">
+                            <span class="material-icons">arrow_circle_up</span>
+                        </button>
                         <button class="btn-delete" onclick="deleteOrder('${
                             user.email
                         }', '${
                     order.id
-                }')" style="margin-left:5px;">Delete</button>
+                }')" style="margin-left:5px; border-radius: 50%; width: 40px; height: 40px; padding: 0; display: inline-flex; align-items: center; justify-content: center;" title="Delete Order">
+                            <span class="material-icons">delete</span>
+                        </button>
                     </td>
                 `;
                 tbody.prepend(tr); // Add newest to top
@@ -998,6 +1044,177 @@ function deleteOrder(userEmail, orderId) {
         showToast("Order Deleted Successfully");
         loadAdminDashboard();
     }
+}
+
+// 5. Admin Navigation & Sections
+function switchAdminSection(section) {
+    // Hide all sections
+    document.querySelectorAll(".admin-section-content").forEach((el) => {
+        el.style.display = "none";
+    });
+
+    // Show selected section
+    const target = document.getElementById(`section-${section}`);
+    if (target) target.style.display = "block";
+
+    // Update Sidebar Active State
+    document.querySelectorAll(".sidebar-menu li").forEach((li) => {
+        li.classList.remove("active");
+    });
+    // Find the li that calls this function with this section
+    const activeLi = Array.from(
+        document.querySelectorAll(".sidebar-menu li")
+    ).find((li) => li.getAttribute("onclick").includes(`'${section}'`));
+    if (activeLi) activeLi.classList.add("active");
+
+    // Load Data
+    if (section === "orders") loadAdminDashboard();
+    if (section === "customers") loadCustomersSection();
+    if (section === "products") loadProductsSection();
+}
+
+// 6. Customers Section
+function loadCustomersSection() {
+    const allUsers = JSON.parse(localStorage.getItem("ALL_USERS")) || [];
+    const tbody = document.getElementById("admin-customers-body");
+    if (!tbody) return;
+
+    tbody.innerHTML = "";
+
+    allUsers.forEach((user) => {
+        // Skip admin user if stored in same list
+        if (user.email === "admin@tastybites.com") return;
+
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+            <td>${user.name}</td>
+            <td>${user.email}</td>
+            <td>${user.phone || "N/A"}</td>
+            <td>${user.orders ? user.orders.length : 0}</td>
+            <td>${user.addresses ? user.addresses.length : 0}</td>
+        `;
+        tbody.appendChild(tr);
+    });
+}
+
+// 7. Products Section
+function loadProductsSection() {
+    const items = getMenuItems();
+    const tbody = document.getElementById("admin-products-body");
+    if (!tbody) return;
+
+    tbody.innerHTML = "";
+
+    items.forEach((item) => {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+            <td><img src="${item.image}" alt="${
+            item.name
+        }" style="width: 50px; height: 50px; object-fit: cover; border-radius: 4px;"></td>
+            <td>${item.name}</td>
+            <td>${item.category}</td>
+            <td>₹${formatPrice(item.price)}</td>
+            <td>
+                <button class="btn-save" onclick="openProductModal(${
+                    item.id
+                })" style="border-radius: 50%; width: 40px; height: 40px; padding: 0; display: inline-flex; align-items: center; justify-content: center;" title="Edit">
+                    <span class="material-icons">edit</span>
+                </button>
+                <button class="btn-delete" onclick="deleteProduct(${
+                    item.id
+                })" style="margin-left:5px; border-radius: 50%; width: 40px; height: 40px; padding: 0; display: inline-flex; align-items: center; justify-content: center;" title="Delete">
+                    <span class="material-icons">delete</span>
+                </button>
+            </td>
+        `;
+        tbody.appendChild(tr);
+    });
+}
+
+// 8. Product Management (CRUD)
+function openProductModal(productId = null) {
+    const modal = document.getElementById("product-modal-admin");
+    if (!modal) return;
+
+    const title = document.getElementById("product-modal-title");
+    const form = document.getElementById("product-form");
+
+    if (productId) {
+        // Edit Mode
+        const items = getMenuItems();
+        const product = items.find((i) => i.id === productId);
+        if (!product) return;
+
+        title.innerText = "Edit Product";
+        document.getElementById("prod-id").value = product.id;
+        document.getElementById("prod-name").value = product.name;
+        document.getElementById("prod-category").value = product.category;
+        document.getElementById("prod-price").value = product.price;
+        document.getElementById("prod-img-url").value = product.image;
+    } else {
+        // Add Mode
+        title.innerText = "Add Product";
+        form.reset();
+        document.getElementById("prod-id").value = "";
+    }
+
+    modal.style.display = "block";
+}
+
+function closeProductModalAdmin() {
+    const modal = document.getElementById("product-modal-admin");
+    if (modal) modal.style.display = "none";
+}
+
+function handleProductSubmit(e) {
+    e.preventDefault();
+
+    const idStr = document.getElementById("prod-id").value;
+    const name = document.getElementById("prod-name").value;
+    const category = document.getElementById("prod-category").value;
+    const price = parseInt(document.getElementById("prod-price").value);
+    const imgUrl = document.getElementById("prod-img-url").value;
+    const fileInput = document.getElementById("prod-img-file");
+
+    let image = imgUrl;
+    if (!image && fileInput.files.length > 0) {
+        // Mock: Use a placeholder or object URL (temporary)
+        image = "./assets/burger1.jpeg"; // Fallback/Mock
+    }
+    if (!image) image = "./assets/burger1.jpeg"; // Default
+
+    let items = getMenuItems();
+
+    if (idStr) {
+        // Update
+        const id = parseInt(idStr);
+        const index = items.findIndex((i) => i.id === id);
+        if (index !== -1) {
+            items[index] = { id, name, category, price, image };
+            showToast("Product Updated!");
+        }
+    } else {
+        // Create
+        const newId =
+            items.length > 0 ? Math.max(...items.map((i) => i.id)) + 1 : 1;
+        items.push({ id: newId, name, category, price, image });
+        showToast("Product Added!");
+    }
+
+    localStorage.setItem("MENU_ITEMS", JSON.stringify(items));
+    closeProductModalAdmin();
+    loadProductsSection();
+}
+
+function deleteProduct(id) {
+    if (!confirm("Delete this product?")) return;
+
+    let items = getMenuItems();
+    items = items.filter((i) => i.id !== id);
+    localStorage.setItem("MENU_ITEMS", JSON.stringify(items));
+
+    showToast("Product Deleted");
+    loadProductsSection();
 }
 
 // ==========================================================================
@@ -1777,3 +1994,32 @@ function openGlobalChat() {
     const latestOrder = sortedOrders[0];
     openChat(latestOrder.id, currentUser.email);
 }
+
+// Initialize
+document.addEventListener("DOMContentLoaded", () => {
+    // Load Menu
+    renderMenu();
+
+    // Check User Login
+    checkLoginState();
+
+    // Check Admin Login
+    checkAdminLogin();
+
+    // Add Global Chat Button
+    if (currentUser) {
+        addGlobalChatButton();
+        setInterval(pollChatMessages, 3000); // Poll every 3 seconds
+    }
+
+    // Load Payment Summary if on payment page
+    if (window.location.href.includes("payment.html")) {
+        loadPaymentSummary();
+        loadPaymentAddresses();
+    }
+
+    // Load Profile Data if on profile page
+    if (window.location.href.includes("profile.html")) {
+        loadProfileData();
+    }
+});
