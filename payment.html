@@ -24,34 +24,7 @@
     </head>
     <body>
         <!-- Navigation Section -->
-        <nav>
-            <div class="hamburger" onclick="toggleMobileMenu()">
-                <span class="material-icons">menu</span>
-            </div>
-            <div class="logo" onclick="window.location.href='index.html'">
-                Tasty<span>Bites</span>
-            </div>
-            <ul class="nav-links" id="nav-links">
-                <li><a href="index.html">Home</a></li>
-                <li><a href="menu.html">Menu</a></li>
-                <li><a href="contact.html">Contact</a></li>
-            </ul>
-            <div class="nav-actions">
-                <button id="theme-toggle" onclick="toggleTheme()">
-                    <span class="material-icons">dark_mode</span>
-                </button>
-                <div id="user-action-area">
-                    <button class="login-btn" onclick="openLogin()">
-                        Login
-                    </button>
-                </div>
-
-                <div class="cart-icon" onclick="toggleCart()">
-                    <span class="material-icons">shopping_cart</span>
-                    <span id="cart-count">0</span>
-                </div>
-            </div>
-        </nav>
+        <div id="navbar-placeholder"></div>
 
         <!-- Payment Section -->
         <section class="payment-section">
@@ -208,196 +181,18 @@
             </div>
         </div>
 
-        <div id="auth-modal" class="modal">
-            <div class="modal-content">
-                <span class="close-modal" onclick="closeLogin()">&times;</span>
-                <div class="auth-tabs">
-                    <button
-                        id="tab-login"
-                        class="active"
-                        onclick="switchTab('login')"
-                    >
-                        Login
-                    </button>
-                    <button id="tab-signup" onclick="switchTab('signup')">
-                        Sign Up
-                    </button>
-                </div>
-                <form
-                    id="login-form"
-                    class="auth-form"
-                    onsubmit="handleLogin(event)"
-                >
-                    <h3>Welcome Back</h3>
-                    <input type="email" placeholder="Email" required />
-                    <input type="password" placeholder="Password" required />
-                    <button type="submit" class="cta-button full-width">
-                        Login
-                    </button>
-                    <button
-                        type="button"
-                        class="cta-button full-width"
-                        onclick="loginAsDemo()"
-                        style="background: #28a745; margin-top: 10px"
-                    >
-                        Demo Login
-                    </button>
-                    <p class="auth-note">Forgot Password?</p>
-                </form>
-                <form
-                    id="signup-form"
-                    class="auth-form hidden"
-                    onsubmit="handleSignup(event)"
-                >
-                    <h3>Create Account</h3>
-                    <input type="text" placeholder="Full Name" required />
-                    <input type="email" placeholder="Email" required />
-                    <input type="password" placeholder="Password" required />
-                    <button type="submit" class="cta-button full-width">
-                        Sign Up
-                    </button>
-                </form>
-            </div>
-        </div>
+        <!-- Auth Modal -->
+        <div id="auth-modal-placeholder"></div>
 
         <!-- Footer Section -->
-        <footer>
-            <div class="footer-content">
-                <div class="footer-col">
-                    <div class="logo">Tasty<span>Bites</span></div>
-                    <p>
-                        Delicious food delivered to your doorstep in minutes.
-                        Fresh ingredients, hot meals, and happy customers.
-                    </p>
-
-                    <div class="payment-methods">
-                        <h3>We Accept</h3>
-                        <div class="payment-icons">
-                            <i class="fa-brands fa-cc-visa"></i>
-                            <i class="fa-brands fa-cc-mastercard"></i>
-                            <i class="fa-brands fa-cc-paypal"></i>
-                            <i class="fa-brands fa-cc-apple-pay"></i>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="footer-col">
-                    <h3>Quick Links</h3>
-                    <ul>
-                        <li><a href="index.html">Home</a></li>
-                        <li><a href="menu.html">Menu</a></li>
-                        <li><a href="contact.html">Contact Us</a></li>
-                        <li>
-                            <a href="#" onclick="openLogin()"
-                                >Login / Sign Up</a
-                            >
-                        </li>
-                    </ul>
-                </div>
-
-                <div class="footer-col">
-                    <h3>Follow Us</h3>
-                    <div class="social-links">
-                        <a href="#" class="social-icon facebook"
-                            ><i class="fa-brands fa-facebook-f"></i
-                        ></a>
-                        <a href="#" class="social-icon youtube"
-                            ><i class="fa-brands fa-youtube"></i
-                        ></a>
-                        <a href="#" class="social-icon instagram"
-                            ><i class="fa-brands fa-instagram"></i
-                        ></a>
-                    </div>
-
-                    <h3 style="margin-top: 20px">Newsletter</h3>
-                    <p class="newsletter-text">
-                        Subscribe for 10% off your first order!
-                    </p>
-                    <form
-                        class="newsletter-form"
-                        onsubmit="event.preventDefault(); alert('Subscribed!');"
-                    >
-                        <input
-                            type="email"
-                            placeholder="Your email..."
-                            required
-                        />
-                        <button type="submit">
-                            <span class="material-icons">send</span>
-                        </button>
-                    </form>
-                </div>
-            </div>
-
-            <div class="footer-bottom">
-                <p>&copy; 2025 TastyBites Food Club. All rights reserved.</p>
-                <button
-                    class="footer-admin-btn"
-                    onclick="window.location.href='admin.html'"
-                >
-                    Admin Panel
-                </button>
-            </div>
-        </footer>
+        <div id="footer-placeholder"></div>
 
         <!-- Chat Modal -->
-        <div id="chat-modal" class="modal">
-            <div class="modal-content chat-modal-content">
-                <span class="close-modal" onclick="closeChat()">&times;</span>
-                <h2 id="chat-order-id">Order Chat</h2>
-                <div id="chat-body" class="chat-body">
-                    <!-- Messages will appear here -->
-                </div>
-                <div class="chat-footer">
-                    <input
-                        type="text"
-                        id="chat-input"
-                        placeholder="Type a message..."
-                        onkeypress="if(event.key==='Enter') sendChatMessage()"
-                    />
-                    <button class="cta-button" onclick="sendChatMessage()">
-                        Send
-                    </button>
-                </div>
-            </div>
-        </div>
+        <div id="chat-modal-placeholder"></div>
 
         <div id="toast-box"></div>
         <!-- Cart Sidebar -->
-        <div id="cart-sidebar" class="cart-sidebar">
-            <div class="cart-header">
-                <h3>Your Cart</h3>
-                <span class="material-icons close-cart" onclick="toggleCart()"
-                    >close</span
-                >
-            </div>
-            <div id="cart-items" class="cart-items">
-                <p class="empty-msg">Your cart is empty.</p>
-            </div>
-            <div class="cart-footer">
-                <div class="promo-code-section">
-                    <input
-                        type="text"
-                        id="promo-input"
-                        placeholder="Promo Code (Try TASTY10)"
-                    />
-                    <button onclick="applyPromo()">Apply</button>
-                </div>
-                <div
-                    class="discount-row"
-                    id="discount-row"
-                    style="display: none; color: green; font-size: 0.9rem"
-                >
-                    Discount: -₹<span id="discount-amount">0</span>
-                </div>
-                <div class="total">Total: ₹<span id="cart-total">0</span></div>
-                <button class="checkout-btn" onclick="checkout()">
-                    Checkout
-                </button>
-            </div>
-        </div>
-        <!-- Modals/Overlays -->
-        <div id="overlay" onclick="toggleCart()"></div>
+        <div id="cart-sidebar-placeholder"></div>
 
         <!-- Scripts -->
         <script src="script.js"></script>

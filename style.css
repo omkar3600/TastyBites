@@ -2281,7 +2281,7 @@ body.dark-mode .chat-message.other .msg-bubble {
     width: 50px;
     height: 50px;
     background: linear-gradient(220deg, #ff0000, #ffe900fc);
-    color: #370000;
+    color: #4a0101;
     border: none;
     border-radius: 50%;
     box-shadow: 0px 0px 20px rgb(255 100 0 / 100%);
