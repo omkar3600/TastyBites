@@ -227,7 +227,7 @@ nav {
 
 /* Enhanced CTA Button */
 .cta-button {
-    margin-top: 5px;
+    /* margin-top: 5px; */
     padding: 15px 40px;
     background: linear-gradient(140deg, #ffbb00, #ff0000);
     color: var(--white);
@@ -241,7 +241,7 @@ nav {
     position: relative;
     overflow: hidden;
     border: 1px #000;
-    border-radius: 50px;
+    border-radius: 20px;
 }
 .cta-button:hover {
     transform: translateY(-5px);
@@ -433,8 +433,12 @@ nav {
 }
 .contact-section h2 {
     text-align: center;
-    margin-bottom: 3rem;
+    margin-bottom: 0rem;
     font-size: 2.5rem;
+    background-image: linear-gradient(60deg, #ff2929, #ffea00);
+    border-radius: 20px;
+    padding: 20px;
+    color: var(--light);
 }
 
 .contact-container {
@@ -472,7 +476,7 @@ nav {
     opacity: 0.8;
 }
 
-/* Contact Form */
+/* Contact Form
 .contact-form {
     flex: 1;
     min-width: 300px;
@@ -498,7 +502,7 @@ nav {
 }
 .contact-form textarea {
     resize: vertical;
-}
+} */
 
 /* --- Reviews Section --- */
 .reviews-section {
@@ -2027,6 +2031,7 @@ body.dark-mode .address-card p {
     flex-direction: column;
     gap: 15px;
     background: var(--bg-color);
+    scrollbar-width: none;
 }
 .chat-footer {
     padding: 15px;
@@ -2036,6 +2041,7 @@ body.dark-mode .address-card p {
     background: var(--card-bg);
     border-bottom-left-radius: 10px;
     border-bottom-right-radius: 10px;
+    justify-content: center;
 }
 .chat-footer input {
     flex: 1;
@@ -2200,7 +2206,7 @@ body.dark-mode .chat-message.other .msg-bubble {
 
 .info-item {
     display: flex;
-    align-items: center;
+    align-items: flex-start; /* Align icon to top of text */
     gap: 15px;
     margin-bottom: 20px;
 }
@@ -2277,8 +2283,55 @@ body.dark-mode .chat-message.other .msg-bubble {
     }
 
     .contact-info,
-    .contact-form {
+    .contact-form,
+    .contact-chat-wrapper {
         padding: 30px;
+    }
+}
+
+@media (max-width: 480px) {
+    .contact-section {
+        padding: 80px 15px 40px;
+    }
+
+    .contact-container {
+        gap: 20px;
+    }
+
+    .contact-info,
+    .contact-chat-wrapper {
+        padding: 20px;
+        min-width: 100%;
+    }
+
+    .contact-info h2 {
+        font-size: 1.8rem;
+    }
+
+    /* Global Small Screen Adjustments */
+    .hero h1 {
+        font-size: 2rem;
+    }
+
+    section,
+    .menu-section,
+    .profile-section,
+    .payment-section,
+    .reviews-section {
+        padding: 40px 15px;
+    }
+
+    .menu-grid {
+        gap: 15px;
+    }
+
+    .review-card {
+        max-width: 100%;
+    }
+
+    .modal-content {
+        width: 95%;
+        padding: 20px;
     }
 }
 
@@ -2302,11 +2355,15 @@ body.dark-mode .chat-message.other .msg-bubble {
     margin-bottom: 15px;
     border: 1px solid #eee;
     margin-top: 15px;
+    min-height: 250px;
+    max-height: 450px;
+    scrollbar-width: none;
 }
 
 .embedded-chat-footer {
     display: flex;
     gap: 10px;
+    flex-wrap: wrap; /* Allow wrapping on small screens */
 }
 
 .embedded-chat-footer input {
