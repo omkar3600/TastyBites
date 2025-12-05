@@ -2333,6 +2333,18 @@ body.dark-mode .chat-message.other .msg-bubble {
         width: 95%;
         padding: 20px;
     }
+    .hero-content {
+        max-width: 90%;
+        padding: 25px;
+        margin: 0;
+    }
+    .hero-content h1 {
+        margin: 0;
+    }
+    .hero-content p {
+        padding: 0px 20px;
+        /* margin: 0; */
+    }
 }
 
 /* Embedded Chat Styles */
@@ -2355,7 +2367,7 @@ body.dark-mode .chat-message.other .msg-bubble {
     margin-bottom: 15px;
     border: 1px solid #eee;
     margin-top: 15px;
-    min-height: 250px;
+    min-height: 372px;
     max-height: 450px;
     scrollbar-width: none;
 }
