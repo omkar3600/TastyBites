@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+    <!-- Header Section -->
     <head>
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -19,18 +20,6 @@
         <link rel="icon" type="image/x-icon" href="./assets/favicon.ico" />
 
         <link
-            rel="stylesheet"
-            href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css"
-        />
-    </head>
-    <body>
-        <!-- Navigation Section -->
-        <div id="navbar-placeholder"></div>
-
-        <section class="contact-section">
-            <div class="contact-container">
-                <div class="contact-info">
-                    <h2>Get in Touch</h2>
                     <p>
                         Have questions or feedback? We'd love to hear from you.
                         Reach out to us using the form or the details below.
@@ -86,16 +75,95 @@
         <!-- Cart Sidebar -->
         <div id="cart-sidebar-placeholder"></div>
 
+        <!-- Modals/Overlays -->
         <div id="overlay" onclick="toggleCart()"></div>
 
         <!-- Auth Modal -->
         <div id="auth-modal-placeholder"></div>
 
         <!-- Footer Section -->
-        <div id="footer-placeholder"></div>
+        <footer>
+            <div class="footer-content">
+                <div class="footer-col">
+                    <div class="logo">Tasty<span>Bites</span></div>
+                    <p>
+                        Delicious food delivered to your doorstep in minutes.
+                        Fresh ingredients, hot meals, and happy customers.
+                    </p>
+
+                    <div class="payment-methods">
+                        <h3>We Accept</h3>
+                        <div class="payment-icons">
+                            <i class="fa-brands fa-cc-visa"></i>
+                            <i class="fa-brands fa-cc-mastercard"></i>
+                            <i class="fa-brands fa-cc-paypal"></i>
+                            <i class="fa-brands fa-cc-apple-pay"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="footer-col">
+                    <h3>Quick Links</h3>
+                    <ul>
+                        <li><a href="index.html">Home</a></li>
+                        <li><a href="menu.html">Menu</a></li>
+                        <li><a href="contact.html">Contact Us</a></li>
+                        <li>
+                            <a href="#" onclick="openLogin()"
+                                >Login / Sign Up</a
+                            >
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="footer-col">
+                    <h3>Follow Us</h3>
+                    <div class="social-links">
+                        <a href="#" class="social-icon facebook"
+                            ><i class="fa-brands fa-facebook-f"></i
+                        ></a>
+                        <a href="#" class="social-icon youtube"
+                            ><i class="fa-brands fa-youtube"></i
+                        ></a>
+                        <a href="#" class="social-icon instagram"
+                            ><i class="fa-brands fa-instagram"></i
+                        ></a>
+                    </div>
+
+                    <h3 style="margin-top: 20px">Newsletter</h3>
+                    <p class="newsletter-text">
+                        Subscribe for 10% off your first order!
+                    </p>
+                    <form
+                        class="newsletter-form"
+                        onsubmit="event.preventDefault(); alert('Subscribed!');"
+                    >
+                        <input
+                            type="email"
+                            placeholder="Your email..."
+                            required
+                        />
+                        <button type="submit">
+                            <span class="material-icons">send</span>
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <div class="footer-bottom">
+                <p>&copy; 2025 TastyBites Food Club. All rights reserved.</p>
+                <button
+                    class="footer-admin-btn"
+                    onclick="window.location.href='admin.html'"
+                >
+                    Admin Panel
+                </button>
+            </div>
+        </footer>
 
         <div id="toast-box"></div>
 
+        <!-- Scripts -->
         <script src="script.js"></script>
     </body>
 </html>
