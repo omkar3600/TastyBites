@@ -291,6 +291,79 @@
                     >
                         <h2>Product Management</h2>
                     </div>
+
+                    <!-- Product Form -->
+                    <div
+                        class="admin-table-container"
+                        style="margin-bottom: 30px"
+                    >
+                        <h3 id="product-form-title" style="margin-bottom: 15px">
+                            Add New Product
+                        </h3>
+                        <form
+                            onsubmit="handleProductSave(event)"
+                            style="
+                                display: grid;
+                                grid-template-columns: 1fr 1fr;
+                                gap: 20px;
+                            "
+                        >
+                            <div class="form-group">
+                                <label>Product Name</label>
+                                <input type="text" id="prod-name" required />
+                            </div>
+                            <div class="form-group">
+                                <label>Category</label>
+                                <select id="prod-category" required>
+                                    <option value="burger">Burger</option>
+                                    <option value="pizza">Pizza</option>
+                                    <option value="biryani">Biryani</option>
+                                    <option value="meal">Meal</option>
+                                    <option value="fastfood">Fast Food</option>
+                                    <option value="sandwich">Sandwich</option>
+                                    <option value="snacks">Snacks</option>
+                                    <option value="beverages">Beverages</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Price (₹)</label>
+                                <input type="number" id="prod-price" required />
+                            </div>
+                            <div class="form-group">
+                                <label>Image URL</label>
+                                <input
+                                    type="text"
+                                    id="prod-image"
+                                    placeholder="./assets/..."
+                                    required
+                                />
+                            </div>
+                            <div
+                                style="
+                                    grid-column: 1 / -1;
+                                    display: flex;
+                                    gap: 10px;
+                                "
+                            >
+                                <button
+                                    type="submit"
+                                    class="cta-button"
+                                    style="padding: 10px 30px"
+                                >
+                                    Save Product
+                                </button>
+                                <button
+                                    type="button"
+                                    class="cta-button"
+                                    onclick="resetProductForm()"
+                                    style="background: #666; padding: 10px 30px"
+                                >
+                                    Cancel
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+
                     <div class="admin-table-container">
                         <table class="admin-table">
                             <thead>
