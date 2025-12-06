@@ -1341,6 +1341,23 @@ footer {
     display: none;
 }
 
+.admin-icon-btn {
+    background: transparent;
+    border: none;
+    color: white;
+    cursor: pointer;
+    padding: 8px;
+    border-radius: 50%;
+    transition: background 0.3s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.admin-icon-btn:hover {
+    background: rgba(255, 255, 255, 0.1);
+}
+
 /* --- Admin Panel --- */
 .admin-stats-grid {
     display: grid;
