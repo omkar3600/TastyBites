@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Category Management - TastyBites Admin</title>
+        <link rel="stylesheet" href="admin.css" />
+        <link
+            href="https://fonts.googleapis.com/icon?family=Material+Icons"
+            rel="stylesheet"
+        />
+        <link
+            href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+            rel="stylesheet"
+        />
+    </head>
+    <body>
+        <!-- Sidebar -->
+        <aside class="admin-sidebar">
+            <div class="sidebar-header">
+                <span class="material-icons">restaurant_menu</span> TastyBites
+            </div>
+            <nav class="sidebar-menu">
+                <a href="admin_home.html">
+                    <i class="material-icons">dashboard</i> Dashboard
+                </a>
+                <a href="order_management.html">
+                    <i class="material-icons">shopping_bag</i> Orders
+                </a>
+                <a href="customer_management.html">
+                    <i class="material-icons">people</i> Customers
+                </a>
+                <a href="product_management.html">
+                    <i class="material-icons">inventory_2</i> Products
+                </a>
+                <a href="category_management.html" class="active">
+                    <i class="material-icons">category</i> Categories
+                </a>
+                <a href="tax_management.html">
+                    <i class="material-icons">receipt_long</i> Taxes & Charges
+                </a>
+                <a href="offer_management.html">
+                    <i class="material-icons">local_offer</i> Offers & Promos
+                </a>
+            </nav>
+            <div class="sidebar-footer">
+                <button class="logout-btn" onclick="adminLogout()">
+                    <i class="material-icons">logout</i> Logout
+                </button>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="admin-main">
+            <header class="admin-header">
+                <h1>Category Management</h1>
+            </header>
+
+            <div class="stats-grid" style="grid-template-columns: 1fr 2fr">
+                <!-- Add Category Form -->
+                <div class="stat-card" style="display: block">
+                    <h3>Add New Category</h3>
+                    <form
+                        onsubmit="handleAddCategory(event)"
+                        style="margin-top: 20px"
+                    >
+                        <div class="form-group">
+                            <label>Category Name</label>
+                            <input
+                                type="text"
+                                id="new-cat-name"
+                                class="form-control"
+                                placeholder="e.g., Desserts"
+                                required
+                            />
+                        </div>
+                        <button
+                            type="submit"
+                            class="btn btn-primary"
+                            style="width: 100%"
+                        >
+                            Add Category
+                        </button>
+                    </form>
+                </div>
+
+                <!-- Categories List -->
+                <div class="table-container">
+                    <h3>Existing Categories</h3>
+                    <table style="margin-top: 15px">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>ID</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="categories-table-body">
+                            <!-- Populated by JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+
+        <script src="admin.js"></script>
+        <script>
+            document.addEventListener("DOMContentLoaded", () => {
+                loadCategoriesTable();
+            });
+
+            function loadCategoriesTable() {
+                const categories = getCategories();
+                const tbody = document.getElementById("categories-table-body");
+                tbody.innerHTML = "";
+
+                categories.forEach((cat) => {
+                    const tr = document.createElement("tr");
+                    tr.innerHTML = `
+                    <td>${cat.name}</td>
+                    <td>${cat.id}</td>
+                    <td>
+                        <button class="btn btn-sm btn-danger" onclick="deleteCategory('${cat.id}')">
+                            <i class="material-icons" style="font-size: 16px; margin:0;">delete</i>
+                        </button>
+                    </td>
+                `;
+                    tbody.appendChild(tr);
+                });
+            }
+
+            function handleAddCategory(e) {
+                e.preventDefault();
+                const name = document
+                    .getElementById("new-cat-name")
+                    .value.trim();
+                if (!name) return;
+
+                const categories = getCategories();
+                const id = name.toLowerCase().replace(/\s+/g, "");
+
+                if (categories.find((c) => c.id === id)) {
+                    showToast("Category already exists");
+                    return;
+                }
+
+                categories.push({ id, name });
+                localStorage.setItem("CATEGORIES", JSON.stringify(categories));
+
+                document.getElementById("new-cat-name").value = "";
+                showToast("Category Added");
+                loadCategoriesTable();
+            }
+
+            function deleteCategory(id) {
+                if (!confirm("Delete this category?")) return;
+                let categories = getCategories();
+                categories = categories.filter((c) => c.id !== id);
+                localStorage.setItem("CATEGORIES", JSON.stringify(categories));
+                showToast("Category Deleted");
+                loadCategoriesTable();
+            }
+        </script>
+    </body>
+</html>

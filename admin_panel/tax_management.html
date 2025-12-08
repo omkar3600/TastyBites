@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Tax & Charges Management - TastyBites Admin</title>
+        <link rel="stylesheet" href="admin.css" />
+        <link
+            href="https://fonts.googleapis.com/icon?family=Material+Icons"
+            rel="stylesheet"
+        />
+        <link
+            href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+            rel="stylesheet"
+        />
+    </head>
+    <body>
+        <!-- Sidebar -->
+        <aside class="admin-sidebar">
+            <div class="sidebar-header">
+                <span class="material-icons">restaurant_menu</span> TastyBites
+            </div>
+            <nav class="sidebar-menu">
+                <a href="admin_home.html">
+                    <i class="material-icons">dashboard</i> Dashboard
+                </a>
+                <a href="order_management.html">
+                    <i class="material-icons">shopping_bag</i> Orders
+                </a>
+                <a href="customer_management.html">
+                    <i class="material-icons">people</i> Customers
+                </a>
+                <a href="product_management.html">
+                    <i class="material-icons">inventory_2</i> Products
+                </a>
+                <a href="category_management.html">
+                    <i class="material-icons">category</i> Categories
+                </a>
+                <a href="tax_management.html" class="active">
+                    <i class="material-icons">receipt_long</i> Taxes & Charges
+                </a>
+                <a href="offer_management.html">
+                    <i class="material-icons">local_offer</i> Offers & Promos
+                </a>
+            </nav>
+            <div class="sidebar-footer">
+                <button class="logout-btn" onclick="adminLogout()">
+                    <i class="material-icons">logout</i> Logout
+                </button>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="admin-main">
+            <header class="admin-header">
+                <h1>Tax & Charges Management</h1>
+            </header>
+
+            <div class="stats-grid" style="grid-template-columns: 1fr 2fr">
+                <!-- Add Charge Form -->
+                <div class="stat-card" style="display: block">
+                    <h3>Add New Charge</h3>
+                    <form
+                        onsubmit="handleAddCharge(event)"
+                        style="margin-top: 20px"
+                    >
+                        <div class="form-group">
+                            <label>Charge Name</label>
+                            <input
+                                type="text"
+                                id="new-charge-name"
+                                class="form-control"
+                                placeholder="e.g., GST, Delivery Fee"
+                                required
+                            />
+                        </div>
+                        <div class="form-group">
+                            <label>Type</label>
+                            <select id="new-charge-type" class="form-control">
+                                <option value="percent">Percentage (%)</option>
+                                <option value="flat">Flat Amount (₹)</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Value</label>
+                            <input
+                                type="number"
+                                id="new-charge-value"
+                                class="form-control"
+                                placeholder="e.g., 5 or 50"
+                                required
+                            />
+                        </div>
+                        <button
+                            type="submit"
+                            class="btn btn-primary"
+                            style="width: 100%"
+                        >
+                            Add Charge
+                        </button>
+                    </form>
+                </div>
+
+                <!-- Charges List -->
+                <div class="table-container">
+                    <h3>Active Charges</h3>
+                    <table style="margin-top: 15px">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Type</th>
+                                <th>Value</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="charges-table-body">
+                            <!-- Populated by JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+
+        <script src="admin.js"></script>
+        <script>
+            document.addEventListener("DOMContentLoaded", () => {
+                loadChargesTable();
+            });
+
+            function loadChargesTable() {
+                const settings = getGlobalSettings();
+                const tbody = document.getElementById("charges-table-body");
+                tbody.innerHTML = "";
+
+                (settings.extraCharges || []).forEach((charge, index) => {
+                    const tr = document.createElement("tr");
+                    tr.innerHTML = `
+                    <td>${charge.name}</td>
+                    <td>${
+                        charge.type === "percent" ? "Percentage" : "Flat Amount"
+                    }</td>
+                    <td>${
+                        charge.type === "percent"
+                            ? charge.value + "%"
+                            : "₹" + charge.value
+                    }</td>
+                    <td>
+                        <button class="btn btn-sm btn-danger" onclick="deleteCharge(${index})">
+                            <i class="material-icons" style="font-size: 16px; margin:0;">delete</i>
+                        </button>
+                    </td>
+                `;
+                    tbody.appendChild(tr);
+                });
+            }
+
+            function handleAddCharge(e) {
+                e.preventDefault();
+                const name = document
+                    .getElementById("new-charge-name")
+                    .value.trim();
+                const type = document.getElementById("new-charge-type").value;
+                const value = parseFloat(
+                    document.getElementById("new-charge-value").value
+                );
+
+                if (!name || isNaN(value)) return;
+
+                const settings = getGlobalSettings();
+                if (!settings.extraCharges) settings.extraCharges = [];
+
+                settings.extraCharges.push({ name, type, value });
+                updateGlobalSettings(settings);
+
+                document.getElementById("new-charge-name").value = "";
+                document.getElementById("new-charge-value").value = "";
+                showToast("Charge Added");
+                loadChargesTable();
+            }
+
+            function deleteCharge(index) {
+                if (!confirm("Delete this charge?")) return;
+                const settings = getGlobalSettings();
+                settings.extraCharges.splice(index, 1);
+                updateGlobalSettings(settings);
+                showToast("Charge Deleted");
+                loadChargesTable();
+            }
+        </script>
+    </body>
+</html>

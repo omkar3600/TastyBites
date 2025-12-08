@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Offers & Promos - TastyBites Admin</title>
+        <link rel="stylesheet" href="admin.css" />
+        <link
+            href="https://fonts.googleapis.com/icon?family=Material+Icons"
+            rel="stylesheet"
+        />
+        <link
+            href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+            rel="stylesheet"
+        />
+    </head>
+    <body>
+        <!-- Sidebar -->
+        <aside class="admin-sidebar">
+            <div class="sidebar-header">
+                <span class="material-icons">restaurant_menu</span> TastyBites
+            </div>
+            <nav class="sidebar-menu">
+                <a href="admin_home.html">
+                    <i class="material-icons">dashboard</i> Dashboard
+                </a>
+                <a href="order_management.html">
+                    <i class="material-icons">shopping_bag</i> Orders
+                </a>
+                <a href="customer_management.html">
+                    <i class="material-icons">people</i> Customers
+                </a>
+                <a href="product_management.html">
+                    <i class="material-icons">inventory_2</i> Products
+                </a>
+                <a href="category_management.html">
+                    <i class="material-icons">category</i> Categories
+                </a>
+                <a href="tax_management.html">
+                    <i class="material-icons">receipt_long</i> Taxes & Charges
+                </a>
+                <a href="offer_management.html" class="active">
+                    <i class="material-icons">local_offer</i> Offers & Promos
+                </a>
+            </nav>
+            <div class="sidebar-footer">
+                <button class="logout-btn" onclick="adminLogout()">
+                    <i class="material-icons">logout</i> Logout
+                </button>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="admin-main">
+            <header class="admin-header">
+                <h1>Offers & Promos Management</h1>
+            </header>
+
+            <div class="stats-grid" style="grid-template-columns: 1fr 1fr">
+                <!-- Global Offer Configuration -->
+                <div class="stat-card" style="display: block">
+                    <h3>Global Store Offer</h3>
+                    <p style="margin-bottom: 20px; color: #666">
+                        Apply a discount on the entire cart subtotal.
+                    </p>
+
+                    <form onsubmit="handleGlobalOfferSave(event)">
+                        <div
+                            class="form-group"
+                            style="
+                                display: flex;
+                                align-items: center;
+                                gap: 10px;
+                            "
+                        >
+                            <input
+                                type="checkbox"
+                                id="global-offer-active"
+                                style="width: 20px; height: 20px"
+                            />
+                            <label for="global-offer-active" style="margin: 0"
+                                >Enable Global Offer</label
+                            >
+                        </div>
+
+                        <div class="form-group">
+                            <label>Offer Name</label>
+                            <input
+                                type="text"
+                                id="global-offer-name"
+                                class="form-control"
+                                placeholder="e.g., Summer Sale"
+                            />
+                        </div>
+
+                        <div class="form-group">
+                            <label>Type</label>
+                            <select id="global-offer-type" class="form-control">
+                                <option value="percent">Percentage (%)</option>
+                                <option value="flat">Flat Amount (₹)</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Value</label>
+                            <input
+                                type="number"
+                                id="global-offer-value"
+                                class="form-control"
+                                placeholder="e.g., 10"
+                            />
+                        </div>
+
+                        <button
+                            type="submit"
+                            class="btn btn-primary"
+                            style="width: 100%"
+                        >
+                            Save Global Offer
+                        </button>
+                    </form>
+                </div>
+
+                <!-- Promo Codes Management -->
+                <div class="stat-card" style="display: block">
+                    <h3>Promo Codes</h3>
+                    <p style="margin-bottom: 20px; color: #666">
+                        Manage coupon codes for customers.
+                    </p>
+
+                    <!-- Add Promo Form -->
+                    <form
+                        onsubmit="handleAddPromo(event)"
+                        style="
+                            background: #f9f9f9;
+                            padding: 15px;
+                            border-radius: 8px;
+                            margin-bottom: 20px;
+                        "
+                    >
+                        <div class="form-group">
+                            <input
+                                type="text"
+                                id="new-promo-code"
+                                class="form-control"
+                                placeholder="Code (e.g., SAVE20)"
+                                required
+                                style="text-transform: uppercase"
+                            />
+                        </div>
+                        <div style="display: flex; gap: 10px">
+                            <select id="new-promo-type" class="form-control">
+                                <option value="percent">%</option>
+                                <option value="flat">₹</option>
+                            </select>
+                            <input
+                                type="number"
+                                id="new-promo-value"
+                                class="form-control"
+                                placeholder="Val"
+                                required
+                            />
+                            <button type="submit" class="btn btn-primary">
+                                Add
+                            </button>
+                        </div>
+                    </form>
+
+                    <!-- Promo List -->
+                    <div
+                        class="table-container"
+                        style="
+                            box-shadow: none;
+                            border: 1px solid #eee;
+                            padding: 0;
+                        "
+                    >
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Code</th>
+                                    <th>Value</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="promos-table-body">
+                                <!-- Populated by JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <script src="admin.js"></script>
+        <script>
+            document.addEventListener("DOMContentLoaded", () => {
+                loadOffersData();
+            });
+
+            function loadOffersData() {
+                const settings = getGlobalSettings();
+
+                // Load Global Offer
+                if (settings.globalOffer) {
+                    document.getElementById("global-offer-active").checked =
+                        settings.globalOffer.active;
+                    document.getElementById("global-offer-name").value =
+                        settings.globalOffer.name;
+                    document.getElementById("global-offer-type").value =
+                        settings.globalOffer.type;
+                    document.getElementById("global-offer-value").value =
+                        settings.globalOffer.value;
+                }
+
+                // Load Promos
+                const tbody = document.getElementById("promos-table-body");
+                tbody.innerHTML = "";
+                (settings.promoCodes || []).forEach((promo, index) => {
+                    const tr = document.createElement("tr");
+                    tr.innerHTML = `
+                    <td style="font-weight: bold;">${promo.code}</td>
+                    <td>${
+                        promo.type === "percent"
+                            ? promo.value + "%"
+                            : "₹" + promo.value
+                    }</td>
+                    <td>
+                        <button class="btn btn-sm btn-danger" onclick="deletePromo(${index})">
+                            <i class="material-icons" style="font-size: 16px; margin:0;">delete</i>
+                        </button>
+                    </td>
+                `;
+                    tbody.appendChild(tr);
+                });
+            }
+
+            function handleGlobalOfferSave(e) {
+                e.preventDefault();
+                const active = document.getElementById(
+                    "global-offer-active"
+                ).checked;
+                const name = document.getElementById("global-offer-name").value;
+                const type = document.getElementById("global-offer-type").value;
+                const value = parseFloat(
+                    document.getElementById("global-offer-value").value
+                );
+
+                const settings = getGlobalSettings();
+                settings.globalOffer = { active, name, type, value };
+                updateGlobalSettings(settings);
+                showToast("Global Offer Saved");
+            }
+
+            function handleAddPromo(e) {
+                e.preventDefault();
+                const code = document
+                    .getElementById("new-promo-code")
+                    .value.trim()
+                    .toUpperCase();
+                const type = document.getElementById("new-promo-type").value;
+                const value = parseFloat(
+                    document.getElementById("new-promo-value").value
+                );
+
+                if (!code || isNaN(value)) return;
+
+                const settings = getGlobalSettings();
+                if (!settings.promoCodes) settings.promoCodes = [];
+
+                if (settings.promoCodes.find((p) => p.code === code)) {
+                    showToast("Code already exists");
+                    return;
+                }
+
+                settings.promoCodes.push({ code, type, value });
+                updateGlobalSettings(settings);
+
+                document.getElementById("new-promo-code").value = "";
+                document.getElementById("new-promo-value").value = "";
+                showToast("Promo Added");
+                loadOffersData();
+            }
+
+            function deletePromo(index) {
+                if (!confirm("Delete this promo code?")) return;
+                const settings = getGlobalSettings();
+                settings.promoCodes.splice(index, 1);
+                updateGlobalSettings(settings);
+                showToast("Promo Deleted");
+                loadOffersData();
+            }
+        </script>
+    </body>
+</html>

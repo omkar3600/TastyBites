@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Customer Management - TastyBites Admin</title>
+        <link rel="stylesheet" href="admin.css" />
+        <link
+            href="https://fonts.googleapis.com/icon?family=Material+Icons"
+            rel="stylesheet"
+        />
+        <link
+            href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+            rel="stylesheet"
+        />
+    </head>
+    <body>
+        <!-- Sidebar -->
+        <aside class="admin-sidebar">
+            <div class="sidebar-header">
+                <span class="material-icons">restaurant_menu</span> TastyBites
+            </div>
+            <nav class="sidebar-menu">
+                <a href="admin_home.html">
+                    <i class="material-icons">dashboard</i> Dashboard
+                </a>
+                <a href="order_management.html">
+                    <i class="material-icons">shopping_bag</i> Orders
+                </a>
+                <a href="customer_management.html" class="active">
+                    <i class="material-icons">people</i> Customers
+                </a>
+                <a href="product_management.html">
+                    <i class="material-icons">inventory_2</i> Products
+                </a>
+                <a href="category_management.html">
+                    <i class="material-icons">category</i> Categories
+                </a>
+                <a href="tax_management.html">
+                    <i class="material-icons">receipt_long</i> Taxes & Charges
+                </a>
+                <a href="offer_management.html">
+                    <i class="material-icons">local_offer</i> Offers & Promos
+                </a>
+            </nav>
+            <div class="sidebar-footer">
+                <button class="logout-btn" onclick="adminLogout()">
+                    <i class="material-icons">logout</i> Logout
+                </button>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="admin-main">
+            <header class="admin-header">
+                <h1>Customer Management</h1>
+                <div class="header-actions">
+                    <input
+                        type="text"
+                        id="customer-search"
+                        placeholder="Search Name or Email..."
+                        class="form-control"
+                        style="width: 250px"
+                        onkeyup="filterCustomers()"
+                    />
+                </div>
+            </header>
+
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Email</th>
+                            <th>Phone</th>
+                            <th>Orders</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="customers-table-body">
+                        <!-- Populated by JS -->
+                    </tbody>
+                </table>
+            </div>
+        </main>
+
+        <!-- Customer Details Modal -->
+        <div id="customer-modal" class="modal">
+            <div class="modal-content" style="max-width: 600px">
+                <span class="close-modal" onclick="closeCustomerModal()"
+                    >&times;</span
+                >
+                <h2 id="modal-customer-name">Customer Details</h2>
+                <hr
+                    style="
+                        margin: 15px 0;
+                        border: 0;
+                        border-top: 1px solid #eee;
+                    "
+                />
+
+                <div style="margin-bottom: 20px">
+                    <h3>Saved Addresses</h3>
+                    <ul
+                        id="modal-addresses"
+                        style="list-style: none; padding: 0; margin-top: 10px"
+                    ></ul>
+                </div>
+
+                <div>
+                    <h3>Order History</h3>
+                    <div
+                        class="table-container"
+                        style="
+                            box-shadow: none;
+                            border: 1px solid #eee;
+                            padding: 0;
+                            margin-top: 10px;
+                        "
+                    >
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Date</th>
+                                    <th>Total</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody id="modal-orders"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Chat Modal -->
+        <div id="chat-modal" class="modal">
+            <div class="modal-content chat-modal-content">
+                <span class="close-modal" onclick="closeAdminChat()"
+                    >&times;</span
+                >
+                <h2 id="chat-header">Chat with Customer</h2>
+                <div class="chat-body" id="chat-body">
+                    <!-- Messages -->
+                </div>
+                <div class="chat-footer">
+                    <input
+                        type="text"
+                        id="chat-input"
+                        placeholder="Type a message..."
+                    />
+                    <button class="send-btn" onclick="sendAdminMessage()">
+                        <i class="material-icons">send</i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <script src="admin.js"></script>
+        <script>
+            document.addEventListener("DOMContentLoaded", () => {
+                loadCustomersTable();
+                setInterval(pollAdminChat, 5000); // Poll for new messages
+            });
+
+            function loadCustomersTable() {
+                const allUsers =
+                    JSON.parse(localStorage.getItem("ALL_USERS")) || [];
+                const tbody = document.getElementById("customers-table-body");
+                tbody.innerHTML = "";
+
+                allUsers.forEach((user) => {
+                    if (user.email === "admin@tastybites.com") return;
+                    const tr = document.createElement("tr");
+                    tr.innerHTML = `
+                    <td>${user.name}</td>
+                    <td>${user.email}</td>
+                    <td>${user.phone || "N/A"}</td>
+                    <td>${user.orders ? user.orders.length : 0}</td>
+                    <td>
+                        <button class="btn btn-sm btn-primary" onclick="viewCustomer('${
+                            user.email
+                        }')" title="View Details">
+                            <i class="material-icons" style="font-size: 16px; margin:0;">visibility</i>
+                        </button>
+                        <button class="btn btn-sm btn-info" onclick="openAdminChat('${
+                            user.email
+                        }')" style="background-color: #17a2b8; color: white; margin-left: 5px;" title="Chat">
+                            <i class="material-icons" style="font-size: 16px; margin:0;">chat</i>
+                        </button>
+                    </td>
+                `;
+                    tbody.appendChild(tr);
+                });
+            }
+
+            function viewCustomer(email) {
+                const allUsers =
+                    JSON.parse(localStorage.getItem("ALL_USERS")) || [];
+                const user = allUsers.find((u) => u.email === email);
+                if (!user) return;
+
+                document.getElementById("modal-customer-name").innerText =
+                    user.name;
+
+                // Addresses
+                const addrList = document.getElementById("modal-addresses");
+                addrList.innerHTML = "";
+                if (user.addresses && user.addresses.length > 0) {
+                    user.addresses.forEach((addr) => {
+                        const li = document.createElement("li");
+                        li.style.marginBottom = "10px";
+                        li.style.padding = "10px";
+                        li.style.background = "#f9f9f9";
+                        li.style.borderRadius = "5px";
+                        li.innerHTML = `<strong>${addr.label}</strong>: ${addr.text}, ${addr.city}`;
+                        addrList.appendChild(li);
+                    });
+                } else {
+                    addrList.innerHTML = "<li>No saved addresses.</li>";
+                }
+
+                // Orders
+                const orderList = document.getElementById("modal-orders");
+                orderList.innerHTML = "";
+                if (user.orders && user.orders.length > 0) {
+                    user.orders.forEach((order) => {
+                        const tr = document.createElement("tr");
+                        tr.innerHTML = `
+                        <td>#${order.id}</td>
+                        <td>${order.date}</td>
+                        <td>${order.total}</td>
+                        <td>${order.status}</td>
+                    `;
+                        orderList.appendChild(tr);
+                    });
+                } else {
+                    orderList.innerHTML =
+                        '<tr><td colspan="4">No orders found.</td></tr>';
+                }
+
+                document
+                    .getElementById("customer-modal")
+                    .classList.add("active");
+            }
+
+            function closeCustomerModal() {
+                document
+                    .getElementById("customer-modal")
+                    .classList.remove("active");
+            }
+
+            function filterCustomers() {
+                const query = document
+                    .getElementById("customer-search")
+                    .value.toLowerCase();
+                const rows = document.querySelectorAll(
+                    "#customers-table-body tr"
+                );
+
+                rows.forEach((row) => {
+                    const name = row.cells[0].innerText.toLowerCase();
+                    const email = row.cells[1].innerText.toLowerCase();
+                    row.style.display =
+                        name.includes(query) || email.includes(query)
+                            ? ""
+                            : "none";
+                });
+            }
+
+            // --- Chat Logic ---
+            let currentChatEmail = null;
+
+            function openAdminChat(email) {
+                currentChatEmail = email;
+                document.getElementById(
+                    "chat-header"
+                ).innerText = `Chat with ${email}`;
+                renderAdminChat();
+                document.getElementById("chat-modal").classList.add("active");
+            }
+
+            function closeAdminChat() {
+                document
+                    .getElementById("chat-modal")
+                    .classList.remove("active");
+                currentChatEmail = null;
+            }
+
+            function renderAdminChat() {
+                if (!currentChatEmail) return;
+                const allUsers =
+                    JSON.parse(localStorage.getItem("ALL_USERS")) || [];
+                const user = allUsers.find((u) => u.email === currentChatEmail);
+                const chatBody = document.getElementById("chat-body");
+
+                if (
+                    !user ||
+                    !user.chatMessages ||
+                    user.chatMessages.length === 0
+                ) {
+                    chatBody.innerHTML =
+                        '<p style="text-align:center; color:#888; margin-top:20px;">No messages yet.</p>';
+                    return;
+                }
+
+                chatBody.innerHTML = user.chatMessages
+                    .map((msg) => {
+                        const isMe = msg.sender === "admin";
+                        return `
+                        <div class="chat-message ${
+                            isMe ? "me" : "other"
+                        }" style="
+                            display: flex; 
+                            justify-content: ${
+                                isMe ? "flex-end" : "flex-start"
+                            }; 
+                            margin-bottom: 10px;
+                        ">
+                            <div class="msg-bubble" style="
+                                max-width: 70%;
+                                padding: 10px 15px;
+                                border-radius: 15px;
+                                background: ${isMe ? "#ff4757" : "#f1f2f6"};
+                                color: ${isMe ? "white" : "#333"};
+                                border-bottom-${
+                                    isMe ? "right" : "left"
+                                }-radius: 2px;
+                            ">
+                                ${msg.text}
+                                <div style="
+                                    font-size: 0.7rem; 
+                                    opacity: 0.7; 
+                                    margin-top: 5px; 
+                                    text-align: right;
+                                ">
+                                    ${new Date(
+                                        msg.timestamp
+                                    ).toLocaleTimeString([], {
+                                        hour: "2-digit",
+                                        minute: "2-digit",
+                                    })}
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                    })
+                    .join("");
+
+                chatBody.scrollTop = chatBody.scrollHeight;
+            }
+
+            function sendAdminMessage() {
+                if (!currentChatEmail) return;
+                const input = document.getElementById("chat-input");
+                const text = input.value.trim();
+                if (!text) return;
+
+                let allUsers =
+                    JSON.parse(localStorage.getItem("ALL_USERS")) || [];
+                const userIndex = allUsers.findIndex(
+                    (u) => u.email === currentChatEmail
+                );
+
+                if (userIndex === -1) return;
+
+                if (!allUsers[userIndex].chatMessages) {
+                    allUsers[userIndex].chatMessages = [];
+                }
+
+                allUsers[userIndex].chatMessages.push({
+                    sender: "admin",
+                    text: text,
+                    timestamp: Date.now(),
+                });
+
+                localStorage.setItem("ALL_USERS", JSON.stringify(allUsers));
+
+                // Sync with Current User if applicable (though less likely needed for admin action on other users)
+                // But good practice if we were modifying the logged-in user
+
+                input.value = "";
+                renderAdminChat();
+            }
+
+            function pollAdminChat() {
+                if (
+                    currentChatEmail &&
+                    document
+                        .getElementById("chat-modal")
+                        .classList.contains("active")
+                ) {
+                    renderAdminChat();
+                }
+            }
+        </script>
+    </body>
+</html>

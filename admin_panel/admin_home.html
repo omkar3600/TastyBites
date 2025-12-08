@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Admin Dashboard - TastyBites</title>
+        <link rel="stylesheet" href="admin.css" />
+        <link
+            href="https://fonts.googleapis.com/icon?family=Material+Icons"
+            rel="stylesheet"
+        />
+        <link
+            href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+            rel="stylesheet"
+        />
+    </head>
+    <body>
+        <!-- Sidebar -->
+        <aside class="admin-sidebar">
+            <div class="sidebar-header">
+                <span class="material-icons">restaurant_menu</span> TastyBites
+            </div>
+            <nav class="sidebar-menu">
+                <a href="admin_home.html" class="active">
+                    <i class="material-icons">dashboard</i> Dashboard
+                </a>
+                <a href="order_management.html">
+                    <i class="material-icons">shopping_bag</i> Orders
+                </a>
+                <a href="customer_management.html">
+                    <i class="material-icons">people</i> Customers
+                </a>
+                <a href="product_management.html">
+                    <i class="material-icons">inventory_2</i> Products
+                </a>
+                <a href="category_management.html">
+                    <i class="material-icons">category</i> Categories
+                </a>
+                <a href="tax_management.html">
+                    <i class="material-icons">receipt_long</i> Taxes & Charges
+                </a>
+                <a href="offer_management.html">
+                    <i class="material-icons">local_offer</i> Offers & Promos
+                </a>
+            </nav>
+            <div class="sidebar-footer">
+                <button class="logout-btn" onclick="adminLogout()">
+                    <i class="material-icons">logout</i> Logout
+                </button>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="admin-main">
+            <header class="admin-header">
+                <h1>Dashboard Overview</h1>
+                <div class="header-actions">
+                    <button
+                        class="btn btn-primary"
+                        onclick="window.open('../index.html', '_blank')"
+                    >
+                        <i class="material-icons">visibility</i> View Website
+                    </button>
+                </div>
+            </header>
+
+            <!-- Stats Grid -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div
+                        class="stat-icon"
+                        style="
+                            background: rgba(255, 99, 71, 0.1);
+                            color: var(--primary);
+                        "
+                    >
+                        <i class="material-icons">shopping_cart</i>
+                    </div>
+                    <div class="stat-info">
+                        <h3 id="total-orders">0</h3>
+                        <p>Total Orders</p>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div
+                        class="stat-icon"
+                        style="
+                            background: rgba(46, 204, 113, 0.1);
+                            color: #2ecc71;
+                        "
+                    >
+                        <i class="material-icons">payments</i>
+                    </div>
+                    <div class="stat-info">
+                        <h3 id="total-revenue">₹0</h3>
+                        <p>Total Revenue</p>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div
+                        class="stat-icon"
+                        style="
+                            background: rgba(241, 196, 15, 0.1);
+                            color: #f1c40f;
+                        "
+                    >
+                        <i class="material-icons">pending_actions</i>
+                    </div>
+                    <div class="stat-info">
+                        <h3 id="pending-orders">0</h3>
+                        <p>Pending Orders</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent Orders Preview -->
+            <div class="table-container">
+                <div
+                    style="
+                        display: flex;
+                        justify-content: space-between;
+                        align-items: center;
+                        margin-bottom: 20px;
+                    "
+                >
+                    <h2>Recent Orders</h2>
+                    <a
+                        href="order_management.html"
+                        class="btn btn-sm btn-primary"
+                        >View All</a
+                    >
+                </div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Order ID</th>
+                            <th>Customer</th>
+                            <th>Amount</th>
+                            <th>Status</th>
+                            <th>Date</th>
+                        </tr>
+                    </thead>
+                    <tbody id="recent-orders-body">
+                        <!-- Populated by JS -->
+                    </tbody>
+                </table>
+            </div>
+        </main>
+
+        <script src="admin.js"></script>
+        <script>
+            // Dashboard Specific Logic
+            document.addEventListener("DOMContentLoaded", () => {
+                loadDashboardStats();
+            });
+
+            function loadDashboardStats() {
+                const orders = getOrders();
+                const totalOrders = orders.length;
+                const totalRevenue = orders.reduce((sum, order) => {
+                    return (
+                        sum +
+                        parseInt(order.total.replace(/,/g, "").replace("₹", ""))
+                    );
+                }, 0);
+                const pendingOrders = orders.filter(
+                    (o) => o.status !== "Delivered" && o.status !== "Cancelled"
+                ).length;
+
+                document.getElementById("total-orders").innerText = totalOrders;
+                document.getElementById("total-revenue").innerText =
+                    "₹" + formatPrice(totalRevenue);
+                document.getElementById("pending-orders").innerText =
+                    pendingOrders;
+
+                // Recent Orders
+                const tbody = document.getElementById("recent-orders-body");
+                tbody.innerHTML = "";
+                orders.slice(0, 5).forEach((order) => {
+                    const tr = document.createElement("tr");
+                    tr.innerHTML = `
+                    <td>#${order.id}</td>
+                    <td>${order.customerName || "Guest"}</td>
+                    <td>${order.total}</td>
+                    <td><span style="padding: 4px 8px; border-radius: 4px; background: #eee; font-size: 0.85rem;">${
+                        order.status
+                    }</span></td>
+                    <td>${order.date}</td>
+                `;
+                    tbody.appendChild(tr);
+                });
+            }
+        </script>
+    </body>
+</html>

@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Customer Details - TastyBites Admin</title>
+        <link rel="stylesheet" href="style.css" />
+        <link
+            href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800&display=swap"
+            rel="stylesheet"
+        />
+        <link
+            href="https://fonts.googleapis.com/icon?family=Material+Icons"
+            rel="stylesheet"
+        />
+    </head>
+    <body style="background-color: #f4f7f6">
+        <nav
+            class="admin-nav"
+            style="background: #333; color: white; padding: 10px 20px"
+        >
+            <div
+                class="logo"
+                style="color: white; font-size: 1.5rem; font-weight: 800"
+            >
+                Tasty<span>Bites</span>
+            </div>
+            <span style="font-weight: 600; font-size: 1.2rem"
+                >Customer Details</span
+            >
+            <div class="nav-actions">
+                <button
+                    class="admin-icon-btn"
+                    onclick="window.location.href='admin.html'"
+                    title="Back to Dashboard"
+                >
+                    <span class="material-icons">arrow_back</span>
+                </button>
+            </div>
+        </nav>
+
+        <div
+            class="admin-container"
+            style="padding: 40px; max-width: 1000px; margin: 0 auto"
+        >
+            <div
+                class="stat-card"
+                style="
+                    margin-bottom: 20px;
+                    display: flex;
+                    align-items: center;
+                    gap: 20px;
+                "
+            >
+                <div
+                    class="stat-icon"
+                    style="
+                        background: #e0f7fa;
+                        color: #00bcd4;
+                        width: 80px;
+                        height: 80px;
+                        font-size: 40px;
+                    "
+                >
+                    <span class="material-icons" style="font-size: 40px"
+                        >person</span
+                    >
+                </div>
+                <div>
+                    <h2 id="cust-name" style="margin: 0; font-size: 2rem">
+                        Loading...
+                    </h2>
+                    <p id="cust-email" style="color: #666; margin: 5px 0">
+                        ...
+                    </p>
+                    <p id="cust-phone" style="color: #666; margin: 0">...</p>
+                </div>
+            </div>
+
+            <div
+                style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px"
+            >
+                <div class="order-summary-box">
+                    <h3>Saved Addresses</h3>
+                    <div id="cust-addresses" style="margin-top: 15px">
+                        <!-- Populated by JS -->
+                    </div>
+                </div>
+
+                <div class="order-summary-box">
+                    <h3>Stats</h3>
+                    <div
+                        style="
+                            display: flex;
+                            justify-content: space-between;
+                            margin-bottom: 10px;
+                        "
+                    >
+                        <span>Total Orders:</span>
+                        <span id="cust-total-orders" style="font-weight: bold"
+                            >0</span
+                        >
+                    </div>
+                    <div style="display: flex; justify-content: space-between">
+                        <span>Total Spent:</span>
+                        <span id="cust-total-spent" style="font-weight: bold"
+                            >₹0</span
+                        >
+                    </div>
+                </div>
+            </div>
+
+            <div class="order-summary-box" style="margin-top: 20px">
+                <h3>Order History</h3>
+                <div class="admin-table-container">
+                    <table class="admin-table">
+                        <thead>
+                            <tr>
+                                <th>Order ID</th>
+                                <th>Date</th>
+                                <th>Items</th>
+                                <th>Total</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="cust-orders-body">
+                            <!-- Populated by JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <script src="script.js"></script>
+        <script>
+            document.addEventListener("DOMContentLoaded", () => {
+                const params = new URLSearchParams(window.location.search);
+                const email = params.get("email");
+                if (!email) {
+                    alert("No customer specified");
+                    window.location.href = "admin.html";
+                    return;
+                }
+
+                const users =
+                    JSON.parse(localStorage.getItem("ALL_USERS")) || [];
+                const user = users.find((u) => u.email === email);
+
+                if (!user) {
+                    alert("Customer not found");
+                    window.location.href = "admin.html";
+                    return;
+                }
+
+                // Populate Info
+                document.getElementById("cust-name").innerText = user.name;
+                document.getElementById("cust-email").innerText = user.email;
+                document.getElementById("cust-phone").innerText =
+                    user.phone || "N/A";
+
+                // Populate Addresses
+                const addrContainer = document.getElementById("cust-addresses");
+                if (user.addresses && user.addresses.length > 0) {
+                    addrContainer.innerHTML = user.addresses
+                        .map(
+                            (a) => `
+                    <div style="background: #f9f9f9; padding: 10px; border-radius: 8px; margin-bottom: 10px; border: 1px solid #eee;">
+                        <strong>${a.label}</strong><br>
+                        ${a.text}, ${a.city}<br>
+                        Phone: ${a.phone}
+                    </div>
+                `
+                        )
+                        .join("");
+                } else {
+                    addrContainer.innerHTML =
+                        "<p style='color: #888;'>No saved addresses.</p>";
+                }
+
+                // Populate Orders
+                const allOrders =
+                    JSON.parse(localStorage.getItem("ALL_ORDERS")) || [];
+                const userOrders = allOrders.filter((o) => {
+                    // Check if order belongs to user (by email match in address or user object if stored)
+                    // Since current implementation might not store user email directly in order, we check logic
+                    // Actually script.js stores 'currentUser' in localStorage, but orders might not link back easily if not explicit.
+                    // Let's assume we match by email if available in order.address or similar.
+                    // Wait, script.js processPayment uses 'currentUser' but doesn't explicitly save email in order root.
+                    // It saves 'address' which has name/phone.
+                    // Let's check if we can link.
+                    // Actually, best way is to check if we modified processPayment to save user email? No.
+                    // But wait, 'orders' are stored in user object too?
+                    // script.js: users.push(newUser) -> user has 'orders' array.
+                    // Let's use user.orders if available, OR filter ALL_ORDERS by some ID.
+                    // Standard approach in this app seems to be user.orders array.
+                    return false;
+                });
+
+                // BETTER APPROACH: Filter ALL_ORDERS where order.userEmail == email OR check user.orders
+                // Let's look at script.js processPayment again.
+                // It pushes to currentUser.orders AND ALL_ORDERS.
+                // So we can just use user.orders from the user object we found!
+
+                const orders = user.orders || [];
+
+                document.getElementById("cust-total-orders").innerText =
+                    orders.length;
+                const totalSpent = orders.reduce(
+                    (sum, o) => sum + (parseInt(o.total) || 0),
+                    0
+                );
+                document.getElementById("cust-total-spent").innerText =
+                    "₹" + totalSpent.toLocaleString();
+
+                const tbody = document.getElementById("cust-orders-body");
+                if (orders.length > 0) {
+                    tbody.innerHTML = orders
+                        .map(
+                            (o) => `
+                    <tr>
+                        <td>#${o.id}</td>
+                        <td>${o.date}</td>
+                        <td>${o.items.map((i) => i.name).join(", ")}</td>
+                        <td>₹${o.total}</td>
+                        <td><span class="status-badge status-${o.status.toLowerCase()}">${
+                                o.status
+                            }</span></td>
+                    </tr>
+                `
+                        )
+                        .join("");
+                } else {
+                    tbody.innerHTML =
+                        "<tr><td colspan='5' style='text-align:center;'>No orders found.</td></tr>";
+                }
+            });
+        </script>
+    </body>
+</html>

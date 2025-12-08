@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Order Management - TastyBites Admin</title>
+        <link rel="stylesheet" href="admin.css" />
+        <link
+            href="https://fonts.googleapis.com/icon?family=Material+Icons"
+            rel="stylesheet"
+        />
+        <link
+            href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+            rel="stylesheet"
+        />
+    </head>
+    <body>
+        <!-- Sidebar -->
+        <aside class="admin-sidebar">
+            <div class="sidebar-header">
+                <span class="material-icons">restaurant_menu</span> TastyBites
+            </div>
+            <nav class="sidebar-menu">
+                <a href="admin_home.html">
+                    <i class="material-icons">dashboard</i> Dashboard
+                </a>
+                <a href="order_management.html" class="active">
+                    <i class="material-icons">shopping_bag</i> Orders
+                </a>
+                <a href="customer_management.html">
+                    <i class="material-icons">people</i> Customers
+                </a>
+                <a href="product_management.html">
+                    <i class="material-icons">inventory_2</i> Products
+                </a>
+                <a href="category_management.html">
+                    <i class="material-icons">category</i> Categories
+                </a>
+                <a href="tax_management.html">
+                    <i class="material-icons">receipt_long</i> Taxes & Charges
+                </a>
+                <a href="offer_management.html">
+                    <i class="material-icons">local_offer</i> Offers & Promos
+                </a>
+            </nav>
+            <div class="sidebar-footer">
+                <button class="logout-btn" onclick="adminLogout()">
+                    <i class="material-icons">logout</i> Logout
+                </button>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="admin-main">
+            <header class="admin-header">
+                <h1>Order Management</h1>
+                <div class="header-actions">
+                    <input
+                        type="text"
+                        id="order-search"
+                        placeholder="Search Order ID or Name..."
+                        class="form-control"
+                        style="width: 250px"
+                        onkeyup="filterOrders()"
+                    />
+                    <select
+                        id="status-filter"
+                        class="form-control"
+                        style="width: 150px"
+                        onchange="filterOrders()"
+                    >
+                        <option value="all">All Status</option>
+                        <option value="Pending">Pending</option>
+                        <option value="Preparing">Preparing</option>
+                        <option value="Out for Delivery">
+                            Out for Delivery
+                        </option>
+                        <option value="Delivered">Delivered</option>
+                        <option value="Cancelled">Cancelled</option>
+                    </select>
+                </div>
+            </header>
+
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Order ID</th>
+                            <th>Customer</th>
+                            <th>Items</th>
+                            <th>Total</th>
+                            <th>Date</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="orders-table-body">
+                        <!-- Populated by JS -->
+                    </tbody>
+                </table>
+            </div>
+        </main>
+
+        <!-- Order Details Modal -->
+        <div id="order-details-modal" class="modal">
+            <div class="modal-content" style="max-width: 600px">
+                <span class="close-modal" onclick="closeOrderModal()"
+                    >&times;</span
+                >
+                <h2>Order Details <span id="modal-order-id"></span></h2>
+                <div id="modal-order-content" style="margin-top: 20px">
+                    <!-- Populated by JS -->
+                </div>
+                <div
+                    style="
+                        margin-top: 20px;
+                        text-align: right;
+                        border-top: 1px solid #eee;
+                        padding-top: 15px;
+                    "
+                >
+                    <h3>Total: <span id="modal-order-total"></span></h3>
+                </div>
+            </div>
+        </div>
+
+        <script src="admin.js"></script>
+        <script>
+            document.addEventListener("DOMContentLoaded", () => {
+                loadOrdersTable();
+            });
+
+            function loadOrdersTable() {
+                const orders = getOrders();
+                const tbody = document.getElementById("orders-table-body");
+                tbody.innerHTML = "";
+
+                orders.forEach((order) => {
+                    const tr = document.createElement("tr");
+
+                    // Items Summary
+                    const itemsSummary = order.items
+                        .map((i) => `${i.name} x${i.quantity}`)
+                        .join(", ");
+
+                    tr.innerHTML = `
+                    <td>#${order.id}</td>
+                    <td>
+                        <strong>${order.customerName || "Guest"}</strong><br>
+                        <small>${order.customerEmail || ""}</small>
+                    </td>
+                    <td>
+                        <button class="btn btn-sm btn-info" onclick="viewOrderDetails('${
+                            order.customerEmail
+                        }', ${
+                        order.id
+                    })" style="background: #eef2f7; color: #333; border: 1px solid #ddd;">
+                            ${
+                                order.items.length
+                            } Items <i class="material-icons" style="font-size: 14px; vertical-align: middle;">visibility</i>
+                        </button>
+                    </td>
+                    <td>${order.total}</td>
+                    <td>${order.date}</td>
+                    <td>
+                        <select class="form-control btn-sm" onchange="updateOrderStatus('${
+                            order.customerEmail
+                        }', ${
+                        order.id
+                    }, this.value)" style="width: 130px; ${getStatusColor(
+                        order.status
+                    )}">
+                            <option value="Pending" ${
+                                order.status === "Pending" ? "selected" : ""
+                            }>Pending</option>
+                            <option value="Preparing" ${
+                                order.status === "Preparing" ? "selected" : ""
+                            }>Preparing</option>
+                            <option value="Out for Delivery" ${
+                                order.status === "Out for Delivery"
+                                    ? "selected"
+                                    : ""
+                            }>Out for Delivery</option>
+                            <option value="Delivered" ${
+                                order.status === "Delivered" ? "selected" : ""
+                            }>Delivered</option>
+                            <option value="Cancelled" ${
+                                order.status === "Cancelled" ? "selected" : ""
+                            }>Cancelled</option>
+                        </select>
+                    </td>
+                    <td>
+                        <button class="btn btn-danger btn-sm" onclick="deleteOrder('${
+                            order.customerEmail
+                        }', ${order.id})">
+                            <i class="material-icons" style="font-size: 16px; margin:0;">delete</i>
+                        </button>
+                    </td>
+                `;
+                    tbody.appendChild(tr);
+                });
+            }
+
+            function viewOrderDetails(email, orderId) {
+                const allUsers =
+                    JSON.parse(localStorage.getItem("ALL_USERS")) || [];
+                const user = allUsers.find((u) => u.email === email);
+                if (!user || !user.orders) return;
+
+                const order = user.orders.find((o) => o.id === orderId);
+                if (!order) return;
+
+                document.getElementById(
+                    "modal-order-id"
+                ).innerText = `#${order.id}`;
+                document.getElementById("modal-order-total").innerText =
+                    order.total;
+
+                const content = document.getElementById("modal-order-content");
+                content.innerHTML = `
+                    <div style="background: #f9f9f9; padding: 15px; border-radius: 8px; margin-bottom: 15px;">
+                        <p><strong>Customer:</strong> ${user.name}</p>
+                        <p><strong>Email:</strong> ${user.email}</p>
+                        <p><strong>Phone:</strong> ${user.phone || "N/A"}</p>
+                        <p><strong>Address:</strong> ${
+                            order.address
+                                ? `${order.address.text}, ${order.address.city}`
+                                : "N/A"
+                        }</p>
+                        <p><strong>Date:</strong> ${order.date}</p>
+                    </div>
+                    <table style="width: 100%; border-collapse: collapse;">
+                        <thead>
+                            <tr style="background: #eee; text-align: left;">
+                                <th style="padding: 10px;">Item</th>
+                                <th style="padding: 10px;">Price</th>
+                                <th style="padding: 10px;">Qty</th>
+                                <th style="padding: 10px;">Total</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${order.items
+                                .map(
+                                    (item) => `
+                                <tr style="border-bottom: 1px solid #eee;">
+                                    <td style="padding: 10px;">
+                                        <div style="display: flex; align-items: center; gap: 10px;">
+                                            <img src="${
+                                                item.image
+                                            }" style="width: 40px; height: 40px; object-fit: cover; border-radius: 4px;">
+                                            ${item.name}
+                                        </div>
+                                    </td>
+                                    <td style="padding: 10px;">₹${
+                                        item.price
+                                    }</td>
+                                    <td style="padding: 10px;">${
+                                        item.quantity
+                                    }</td>
+                                    <td style="padding: 10px;">₹${
+                                        item.price * item.quantity
+                                    }</td>
+                                </tr>
+                            `
+                                )
+                                .join("")}
+                        </tbody>
+                    </table>
+                `;
+
+                document
+                    .getElementById("order-details-modal")
+                    .classList.add("active");
+            }
+
+            function closeOrderModal() {
+                document
+                    .getElementById("order-details-modal")
+                    .classList.remove("active");
+            }
+
+            function getStatusColor(status) {
+                if (status === "Delivered")
+                    return "border-color: #2ecc71; color: #2ecc71;";
+                if (status === "Cancelled")
+                    return "border-color: #e74c3c; color: #e74c3c;";
+                if (status === "Pending")
+                    return "border-color: #f39c12; color: #f39c12;";
+                return "";
+            }
+
+            function updateOrderStatus(email, orderId, newStatus) {
+                const allUsers =
+                    JSON.parse(localStorage.getItem("ALL_USERS")) || [];
+                const user = allUsers.find((u) => u.email === email);
+                if (user && user.orders) {
+                    const order = user.orders.find((o) => o.id === orderId);
+                    if (order) {
+                        order.status = newStatus;
+                        localStorage.setItem(
+                            "ALL_USERS",
+                            JSON.stringify(allUsers)
+                        );
+
+                        // Update Active Order if matches
+                        const activeOrder = JSON.parse(
+                            localStorage.getItem("ACTIVE_ORDER")
+                        );
+                        if (activeOrder && activeOrder.id === orderId) {
+                            activeOrder.status = newStatus;
+                            localStorage.setItem(
+                                "ACTIVE_ORDER",
+                                JSON.stringify(activeOrder)
+                            );
+                        }
+
+                        showToast(`Order #${orderId} updated to ${newStatus}`);
+                        loadOrdersTable();
+                    }
+                }
+            }
+
+            function deleteOrder(email, orderId) {
+                if (!confirm("Are you sure you want to delete this order?"))
+                    return;
+
+                const allUsers =
+                    JSON.parse(localStorage.getItem("ALL_USERS")) || [];
+                const user = allUsers.find((u) => u.email === email);
+                if (user && user.orders) {
+                    user.orders = user.orders.filter((o) => o.id !== orderId);
+                    localStorage.setItem("ALL_USERS", JSON.stringify(allUsers));
+                    showToast("Order Deleted");
+                    loadOrdersTable();
+                }
+            }
+
+            function filterOrders() {
+                const query = document
+                    .getElementById("order-search")
+                    .value.toLowerCase();
+                const status = document.getElementById("status-filter").value;
+                const rows = document.querySelectorAll("#orders-table-body tr");
+
+                rows.forEach((row) => {
+                    const id = row.cells[0].innerText.toLowerCase();
+                    const name = row.cells[1].innerText.toLowerCase();
+                    const rowStatus = row.querySelector("select").value;
+
+                    const matchesSearch =
+                        id.includes(query) || name.includes(query);
+                    const matchesStatus =
+                        status === "all" || rowStatus === status;
+
+                    row.style.display =
+                        matchesSearch && matchesStatus ? "" : "none";
+                });
+            }
+        </script>
+    </body>
+</html>

@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Product Management - TastyBites Admin</title>
+        <link rel="stylesheet" href="admin.css" />
+        <link
+            href="https://fonts.googleapis.com/icon?family=Material+Icons"
+            rel="stylesheet"
+        />
+        <link
+            href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+            rel="stylesheet"
+        />
+    </head>
+    <body>
+        <!-- Sidebar -->
+        <aside class="admin-sidebar">
+            <div class="sidebar-header">
+                <span class="material-icons">restaurant_menu</span> TastyBites
+            </div>
+            <nav class="sidebar-menu">
+                <a href="admin_home.html">
+                    <i class="material-icons">dashboard</i> Dashboard
+                </a>
+                <a href="order_management.html">
+                    <i class="material-icons">shopping_bag</i> Orders
+                </a>
+                <a href="customer_management.html">
+                    <i class="material-icons">people</i> Customers
+                </a>
+                <a href="product_management.html" class="active">
+                    <i class="material-icons">inventory_2</i> Products
+                </a>
+                <a href="category_management.html">
+                    <i class="material-icons">category</i> Categories
+                </a>
+                <a href="tax_management.html">
+                    <i class="material-icons">receipt_long</i> Taxes & Charges
+                </a>
+                <a href="offer_management.html">
+                    <i class="material-icons">local_offer</i> Offers & Promos
+                </a>
+            </nav>
+            <div class="sidebar-footer">
+                <button class="logout-btn" onclick="adminLogout()">
+                    <i class="material-icons">logout</i> Logout
+                </button>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="admin-main">
+            <header class="admin-header">
+                <h1>Product Management</h1>
+                <div class="header-actions">
+                    <button
+                        class="btn btn-primary"
+                        onclick="openProductModal()"
+                    >
+                        <i class="material-icons">add</i> Add Product
+                    </button>
+                </div>
+            </header>
+
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Image</th>
+                            <th>Name</th>
+                            <th>Category</th>
+                            <th>Price</th>
+                            <th>Offer</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="products-table-body">
+                        <!-- Populated by JS -->
+                    </tbody>
+                </table>
+            </div>
+        </main>
+
+        <!-- Product Modal -->
+        <div id="product-modal" class="modal">
+            <div class="modal-content">
+                <span class="close-modal" onclick="closeProductModal()"
+                    >&times;</span
+                >
+                <h2 id="modal-title">Add Product</h2>
+                <form id="product-form" onsubmit="handleProductSave(event)">
+                    <input type="hidden" id="prod-id" />
+
+                    <div class="form-group">
+                        <label>Product Name</label>
+                        <input
+                            type="text"
+                            id="prod-name"
+                            class="form-control"
+                            required
+                        />
+                    </div>
+
+                    <div class="form-group">
+                        <label>Category</label>
+                        <select
+                            id="prod-category"
+                            class="form-control"
+                            required
+                        >
+                            <!-- Populated by JS -->
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Price (₹)</label>
+                        <input
+                            type="number"
+                            id="prod-price"
+                            class="form-control"
+                            required
+                        />
+                    </div>
+
+                    <div class="form-group">
+                        <label>Image URL</label>
+                        <input
+                            type="text"
+                            id="prod-image"
+                            class="form-control"
+                            placeholder="https://..."
+                            required
+                        />
+                    </div>
+
+                    <div class="form-group">
+                        <label>Offer Type</label>
+                        <select id="prod-offer-type" class="form-control">
+                            <option value="none">None</option>
+                            <option value="percent">Percentage (%)</option>
+                            <option value="flat">Flat Amount (₹)</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Offer Value</label>
+                        <input
+                            type="number"
+                            id="prod-offer-value"
+                            class="form-control"
+                            value="0"
+                        />
+                    </div>
+
+                    <button
+                        type="submit"
+                        class="btn btn-primary"
+                        style="width: 100%"
+                    >
+                        Save Product
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <script src="admin.js"></script>
+        <script>
+            document.addEventListener("DOMContentLoaded", () => {
+                loadProductsTable();
+                loadCategoryDropdown();
+            });
+
+            function loadProductsTable() {
+                const products = getProducts();
+                const tbody = document.getElementById("products-table-body");
+                tbody.innerHTML = "";
+
+                products.forEach((item) => {
+                    const tr = document.createElement("tr");
+
+                    let offerText = "-";
+                    if (item.offer && item.offer.type !== "none") {
+                        offerText =
+                            item.offer.type === "percent"
+                                ? `${item.offer.value}% Off`
+                                : `₹${item.offer.value} Off`;
+                    }
+
+                    tr.innerHTML = `
+                    <td><img src="${item.image}" alt="${
+                        item.name
+                    }" style="width: 50px; height: 50px; object-fit: cover; border-radius: 8px;"></td>
+                    <td>${item.name}</td>
+                    <td>${item.category}</td>
+                    <td>₹${formatPrice(item.price)}</td>
+                    <td><span style="color: var(--primary); font-weight: 500;">${offerText}</span></td>
+                    <td>
+                        <button class="btn btn-sm btn-primary" onclick="editProduct(${
+                            item.id
+                        })">
+                            <i class="material-icons" style="font-size: 16px; margin:0;">edit</i>
+                        </button>
+                        <button class="btn btn-sm btn-danger" onclick="deleteProduct(${
+                            item.id
+                        })">
+                            <i class="material-icons" style="font-size: 16px; margin:0;">delete</i>
+                        </button>
+                    </td>
+                `;
+                    tbody.appendChild(tr);
+                });
+            }
+
+            function loadCategoryDropdown() {
+                const categories = getCategories();
+                const select = document.getElementById("prod-category");
+                select.innerHTML = "";
+                categories.forEach((cat) => {
+                    const option = document.createElement("option");
+                    option.value = cat.name; // Using name as ID for simplicity in existing logic
+                    option.textContent = cat.name;
+                    select.appendChild(option);
+                });
+            }
+
+            function openProductModal() {
+                document.getElementById("product-form").reset();
+                document.getElementById("prod-id").value = "";
+                document.getElementById("modal-title").innerText =
+                    "Add Product";
+                document
+                    .getElementById("product-modal")
+                    .classList.add("active");
+            }
+
+            function closeProductModal() {
+                document
+                    .getElementById("product-modal")
+                    .classList.remove("active");
+            }
+
+            function editProduct(id) {
+                const products = getProducts();
+                const item = products.find((p) => p.id === id);
+                if (!item) return;
+
+                document.getElementById("prod-id").value = item.id;
+                document.getElementById("prod-name").value = item.name;
+                document.getElementById("prod-category").value = item.category;
+                document.getElementById("prod-price").value = item.price;
+                document.getElementById("prod-image").value = item.image;
+
+                if (item.offer) {
+                    document.getElementById("prod-offer-type").value =
+                        item.offer.type;
+                    document.getElementById("prod-offer-value").value =
+                        item.offer.value;
+                } else {
+                    document.getElementById("prod-offer-type").value = "none";
+                    document.getElementById("prod-offer-value").value = 0;
+                }
+
+                document.getElementById("modal-title").innerText =
+                    "Edit Product";
+                document
+                    .getElementById("product-modal")
+                    .classList.add("active");
+            }
+
+            function handleProductSave(e) {
+                e.preventDefault();
+                const id = document.getElementById("prod-id").value;
+                const name = document.getElementById("prod-name").value;
+                const category = document.getElementById("prod-category").value;
+                const price = parseInt(
+                    document.getElementById("prod-price").value
+                );
+                const image = document.getElementById("prod-image").value;
+                const offerType =
+                    document.getElementById("prod-offer-type").value;
+                const offerValue =
+                    parseFloat(
+                        document.getElementById("prod-offer-value").value
+                    ) || 0;
+
+                let products = getProducts();
+
+                if (id) {
+                    // Update
+                    const index = products.findIndex((p) => p.id == id);
+                    if (index !== -1) {
+                        products[index] = {
+                            ...products[index],
+                            name,
+                            category,
+                            price,
+                            image,
+                            offer: { type: offerType, value: offerValue },
+                        };
+                        showToast("Product Updated");
+                    }
+                } else {
+                    // Add
+                    const newId =
+                        products.length > 0
+                            ? Math.max(...products.map((p) => p.id)) + 1
+                            : 1;
+                    products.push({
+                        id: newId,
+                        name,
+                        category,
+                        price,
+                        image,
+                        offer: { type: offerType, value: offerValue },
+                    });
+                    showToast("Product Added");
+                }
+
+                localStorage.setItem("MENU_ITEMS", JSON.stringify(products));
+                closeProductModal();
+                loadProductsTable();
+            }
+
+            function deleteProduct(id) {
+                if (!confirm("Delete this product?")) return;
+                let products = getProducts();
+                products = products.filter((p) => p.id !== id);
+                localStorage.setItem("MENU_ITEMS", JSON.stringify(products));
+                showToast("Product Deleted");
+                loadProductsTable();
+            }
+        </script>
+    </body>
+</html>

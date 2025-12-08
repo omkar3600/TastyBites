@@ -131,7 +131,7 @@ let lastChatCheck = Date.now();
 let selectedPaymentMethod = null;
 let selectedAddressId = null;
 
-// DOM Elements (Initialized after components load)
+// DOM Elements
 let menuContainer,
     cartItemsContainer,
     cartTotalElement,
@@ -139,18 +139,61 @@ let menuContainer,
     sidebar,
     overlay,
     authModal,
-    loginForm,
-    signupForm,
-    tabLogin,
-    tabSignup;
+    loginForm;
 
-// ==========================================================================
-// 2. INITIALIZATION & COMPONENT LOADING
-// ==========================================================================
+// Categories
+const defaultCategories = [
+    { id: "burger", name: "Burger" },
+    { id: "pizza", name: "Pizza" },
+    { id: "biryani", name: "Biryani" },
+    { id: "meal", name: "Meal" },
+    { id: "fastfood", name: "Fast Food" },
+    { id: "sandwich", name: "Sandwich" },
+    { id: "snacks", name: "Snacks" },
+    { id: "beverages", name: "Beverages" },
+];
+
+function getCategories() {
+    return JSON.parse(localStorage.getItem("CATEGORIES")) || defaultCategories;
+}
+
+function getGlobalSettings() {
+    return (
+        JSON.parse(localStorage.getItem("GLOBAL_SETTINGS")) || {
+            extraCharges: [],
+            globalOffer: { active: false, name: "", type: "percent", value: 0 },
+            promoCodes: [],
+        }
+    );
+}
+
+function updateGlobalSettings(settings) {
+    localStorage.setItem("GLOBAL_SETTINGS", JSON.stringify(settings));
+}
+
+function addCategory(name) {
+    const categories = getCategories();
+    const id = name.toLowerCase().replace(/\s+/g, "");
+    if (categories.find((c) => c.id === id))
+        return showToast("Category already exists");
+    categories.push({ id, name });
+    localStorage.setItem("CATEGORIES", JSON.stringify(categories));
+    showToast("Category Added");
+    loadCategoriesSection(); // Refresh Admin
+}
+
+function deleteCategory(id) {
+    if (!confirm("Delete this category?")) return;
+    let categories = getCategories();
+    categories = categories.filter((c) => c.id !== id);
+    localStorage.setItem("CATEGORIES", JSON.stringify(categories));
+    showToast("Category Deleted");
+    loadCategoriesSection(); // Refresh Admin
+}
 
 document.addEventListener("DOMContentLoaded", async () => {
     // 1. Load Components
-    await loadAllComponents();
+    // await loadAllComponents(); // Disabled: Components are now hardcoded in HTML files
 
     // 2. Initialize Global Elements
     initializeGlobalElements();
@@ -163,9 +206,10 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
 
     // 4. Core Logic Init
-    checkLoginState();
-    updateCartUI();
-    if (menuContainer) renderMenu();
+    if (typeof checkLoginState === "function") checkLoginState();
+    if (typeof updateCartUI === "function") updateCartUI();
+    if (typeof renderCategoryFilters === "function") renderCategoryFilters();
+    if (menuContainer && typeof renderMenu === "function") renderMenu();
 
     // 5. Page Specific Init
     if (typeof checkAdminLogin === "function") checkAdminLogin();
@@ -198,23 +242,39 @@ document.addEventListener("DOMContentLoaded", async () => {
 });
 
 async function loadAllComponents() {
+    console.log("Starting loadAllComponents...");
     const components = [
-        { id: "navbar-placeholder", path: "elements/navbar.html" },
-        { id: "footer-placeholder", path: "elements/footer.html" },
-        { id: "cart-sidebar-placeholder", path: "elements/cart-sidebar.html" },
-        { id: "auth-modal-placeholder", path: "elements/auth-modal.html" },
-        { id: "chat-modal-placeholder", path: "elements/chat-modal.html" },
+        { id: "navbar-placeholder", path: "./elements/navbar.html" },
+        { id: "footer-placeholder", path: "./elements/footer.html" },
+        {
+            id: "cart-sidebar-placeholder",
+            path: "./elements/cart-sidebar.html",
+        },
+        { id: "auth-modal-placeholder", path: "./elements/auth-modal.html" },
+        { id: "chat-modal-placeholder", path: "./elements/chat-modal.html" },
     ];
-    await Promise.all(components.map((c) => loadComponent(c.id, c.path)));
+
+    for (const c of components) {
+        await loadComponent(c.id, c.path);
+    }
+    console.log("All components loaded.");
 }
 
 async function loadComponent(elementId, filePath) {
     const element = document.getElementById(elementId);
-    if (!element) return;
+    if (!element) {
+        console.warn(`Element with ID ${elementId} not found.`);
+        return;
+    }
     try {
         const response = await fetch(filePath);
         if (response.ok) {
             element.innerHTML = await response.text();
+            console.log(`Loaded ${filePath} into ${elementId}`);
+        } else {
+            console.error(
+                `Failed to load ${filePath}: ${response.status} ${response.statusText}`
+            );
         }
     } catch (error) {
         console.error(`Error loading ${filePath}:`, error);
@@ -243,13 +303,27 @@ function formatPrice(amount) {
     return amount.toLocaleString("en-IN", { minimumFractionDigits: 0 });
 }
 
+function calculateItemPrice(item) {
+    let price = item.price;
+    let originalPrice = item.price;
+    let hasDiscount = false;
+
+    if (item.offer && item.offer.type !== "none") {
+        if (item.offer.type === "percent") {
+            price = Math.round(item.price * (1 - item.offer.value / 100));
+        } else if (item.offer.type === "flat") {
+            price = Math.max(0, item.price - item.offer.value);
+        }
+        hasDiscount = true;
+    }
+    return { price, originalPrice, hasDiscount };
+}
+
 function showToast(message) {
-    const toastBox = document.getElementById("toast-box");
-    if (!toastBox) return;
-    const toast = document.createElement("div");
-    toast.classList.add("toast");
-    toast.innerHTML = `<i class="material-icons">check_circle</i> ${message}`;
-    toastBox.appendChild(toast);
+    let toast = document.createElement("div");
+    toast.className = "toast";
+    toast.innerText = message;
+    document.body.appendChild(toast);
     setTimeout(() => toast.classList.add("show"), 100);
     setTimeout(() => {
         toast.classList.remove("show");
@@ -378,25 +452,6 @@ function handleSignup(e) {
     checkLoginState();
 }
 
-function loginAsDemo() {
-    const demoUser = {
-        name: "Demo User",
-        email: "demo@tastybites.com",
-        password: "demo",
-        phone: "9876543210",
-        address: "123 Tasty Street, Foodie City",
-        orders: [],
-        favorites: [1, 3, 5],
-    };
-    updateMasterUserList(demoUser);
-    currentUser = demoUser;
-    localStorage.setItem("CURRENT_USER", JSON.stringify(demoUser));
-    showToast("Logged in as Demo User");
-    closeLogin();
-    checkLoginState();
-    if (window.location.href.includes("profile.html")) loadProfileData();
-}
-
 function checkLoginState() {
     const navAction = document.getElementById("user-action-area");
     if (!navAction) return;
@@ -446,7 +501,17 @@ function renderMenu(items = getMenuItems()) {
                 <img src="${item.image}" alt="${item.name}" loading="lazy">
                 <div class="food-info">
                     <h3>${item.name}</h3>
-                    <p class="price">₹${formatPrice(item.price)}</p>
+                    <p class="price">
+                        ${(() => {
+                            const { price, originalPrice, hasDiscount } =
+                                calculateItemPrice(item);
+                            return hasDiscount
+                                ? `<span style="text-decoration: line-through; color: #999; font-size: 0.9em;">₹${formatPrice(
+                                      originalPrice
+                                  )}</span> ₹${formatPrice(price)}`
+                                : `₹${formatPrice(price)}`;
+                        })()}
+                    </p>
                 </div>
             </div>
             <div style="padding: 0 15px 15px;">
@@ -483,6 +548,38 @@ function filterMenu(category) {
         items = items.filter((i) => i.category === category);
     }
     renderMenu(items);
+}
+
+function renderCategoryFilters() {
+    const container = document.querySelector(".category-filters");
+    if (!container) return;
+
+    const categories = getCategories();
+    const activeBtn = document.querySelector(".filter-btn.active");
+    const activeCat = activeBtn
+        ? activeBtn.textContent.trim().toLowerCase()
+        : "all";
+
+    let html = `<button class="filter-btn ${
+        activeCat === "all" ? "active" : ""
+    }" onclick="filterMenu('all')">All</button>`;
+    html += `<button class="filter-btn ${
+        activeCat === "favorites" ? "active" : ""
+    }" onclick="filterMenu('favorites')">Favorites</button>`;
+
+    html += categories
+        .map(
+            (cat) => `
+        <button class="filter-btn ${
+            activeCat === cat.name.toLowerCase() ? "active" : ""
+        }" onclick="filterMenu('${cat.id}')">
+            ${cat.name}
+        </button>
+    `
+        )
+        .join("");
+
+    container.innerHTML = html;
 }
 
 function searchMenu() {
@@ -557,12 +654,23 @@ function updateCartUI() {
                 '<p class="empty-msg">Your cart is empty.</p>';
         else {
             cartItemsContainer.innerHTML = cart
-                .map(
-                    (item) => `
+                .map((item) => {
+                    const { price, originalPrice, hasDiscount } =
+                        calculateItemPrice(item);
+                    return `
                 <div class="cart-item">
                     <div class="item-info">
                         <h4>${item.name}</h4>
-                        <p>₹${formatPrice(item.price)} x ${item.quantity}</p>
+                        <p>
+                            ${
+                                hasDiscount
+                                    ? `<span style="text-decoration: line-through; color: #999; font-size: 0.8em;">₹${formatPrice(
+                                          originalPrice
+                                      )}</span> `
+                                    : ""
+                            }
+                            ₹${formatPrice(price)} x ${item.quantity}
+                        </p>
                     </div>
                     <div class="qty-controls">
                         <button onclick="changeQty(${
@@ -577,28 +685,52 @@ function updateCartUI() {
                         item.id
                     })"><span class="material-icons">delete</span></span>
                 </div>
-            `
-                )
+            `;
+                })
                 .join("");
         }
     }
 
-    const subtotal = cart.reduce(
-        (sum, item) => sum + item.price * item.quantity,
-        0
-    );
-    const finalTotal = subtotal - discount;
+    const subtotal = cart.reduce((sum, item) => {
+        const { price } = calculateItemPrice(item);
+        return sum + price * item.quantity;
+    }, 0);
 
-    const discountRow = document.getElementById("discount-row");
-    const discountAmountEl = document.getElementById("discount-amount");
-    if (discountRow && discountAmountEl) {
-        if (discount > 0) {
-            discountRow.style.display = "block";
-            discountAmountEl.textContent = formatPrice(discount);
+    const settings = getGlobalSettings();
+
+    // Global Offer
+    let globalDiscount = 0;
+    if (settings.globalOffer && settings.globalOffer.active) {
+        if (settings.globalOffer.type === "percent") {
+            globalDiscount = Math.round(
+                subtotal * (settings.globalOffer.value / 100)
+            );
         } else {
-            discountRow.style.display = "none";
+            globalDiscount = settings.globalOffer.value;
         }
     }
+
+    // Calculate Charges
+    let chargesTotal = 0;
+    const taxableAmount = Math.max(0, subtotal - globalDiscount); // Charges on discounted amount? Usually yes.
+
+    (settings.extraCharges || []).forEach((charge) => {
+        if (charge.type === "percent") {
+            chargesTotal += Math.round(taxableAmount * (charge.value / 100));
+        } else {
+            chargesTotal += charge.value;
+        }
+    });
+
+    const finalTotal = taxableAmount + chargesTotal;
+
+    // Update Summary Elements
+    if (document.getElementById("summary-subtotal"))
+        document.getElementById("summary-subtotal").innerText =
+            formatPrice(subtotal);
+
+    // We might need to dynamically render charges in the cart sidebar if we want full detail,
+    // but for now let's just show the total. The detailed breakdown is in Payment page.
 
     if (cartTotalElement)
         cartTotalElement.textContent = formatPrice(
@@ -616,22 +748,40 @@ function applyPromo() {
     const code = input.value.trim().toUpperCase();
     if (!code) return showToast("Please enter a code");
 
+    const settings = getGlobalSettings();
+    const promo = (settings.promoCodes || []).find((p) => p.code === code);
+
+    // Calculate subtotal for percentage calculation
     const subtotal = cart.reduce(
         (sum, item) => sum + item.price * item.quantity,
         0
     );
 
-    if (code === "TASTY10") {
+    if (promo) {
+        if (promo.type === "percent") {
+            discount = Math.floor(subtotal * (promo.value / 100));
+            showToast(`Promo Applied: ${promo.value}% Off!`);
+        } else {
+            discount = promo.value;
+            showToast(`Promo Applied: ₹${promo.value} Off!`);
+        }
+    } else if (code === "TASTY10") {
+        // Keep hardcoded fallback for demo
         discount = Math.floor(subtotal * 0.1);
         showToast("Promo Applied: 10% Off!");
     } else if (code === "SAVE50") {
+        // Keep hardcoded fallback for demo
         discount = 50;
         showToast("Promo Applied: ₹50 Off!");
     } else {
         discount = 0;
         showToast("Invalid Promo Code");
     }
+
     updateCartUI();
+    if (window.location.href.includes("payment.html")) {
+        loadPaymentSummary();
+    }
 }
 
 function checkout() {
@@ -871,8 +1021,9 @@ function updateTrackerStepper(currentStep) {
 
 function loadPaymentSummary() {
     const cart = JSON.parse(localStorage.getItem("CART")) || [];
-    const container = document.getElementById("payment-items-list");
+    const container = document.getElementById("payment-items"); // Updated ID
     const totalEl = document.getElementById("payment-total");
+
     if (!container) return;
 
     if (cart.length === 0) {
@@ -881,22 +1032,158 @@ function loadPaymentSummary() {
         return;
     }
 
+    // Render Items
     container.innerHTML = cart
-        .map(
-            (item) => `
+        .map((item) => {
+            const { price, originalPrice, hasDiscount } =
+                calculateItemPrice(item);
+            return `
         <div class="payment-item">
             <span>${item.name} x ${item.quantity}</span>
-            <span>₹${item.price * item.quantity}</span>
+            <span>
+                ${
+                    hasDiscount
+                        ? `<span style="text-decoration: line-through; color: #999; font-size: 0.8em;">₹${formatPrice(
+                              originalPrice * item.quantity
+                          )}</span> `
+                        : ""
+                }
+                ₹${formatPrice(price * item.quantity)}
+            </span>
         </div>
-    `
-        )
+    `;
+        })
         .join("");
 
-    const total = cart.reduce(
-        (sum, item) => sum + item.price * item.quantity,
-        0
-    );
-    if (totalEl) totalEl.innerText = total;
+    // Calculate Subtotal
+    const subtotal = cart.reduce((sum, item) => {
+        const { price } = calculateItemPrice(item);
+        return sum + price * item.quantity;
+    }, 0);
+
+    const settings = getGlobalSettings();
+
+    // 1. Global Offer
+    let globalDiscount = 0;
+    if (settings.globalOffer && settings.globalOffer.active) {
+        if (settings.globalOffer.type === "percent") {
+            globalDiscount = Math.round(
+                subtotal * (settings.globalOffer.value / 100)
+            );
+        } else {
+            globalDiscount = settings.globalOffer.value;
+        }
+    }
+
+    // 2. Promo Code
+    let promoDiscount = 0;
+    // 'discount' is a global variable from script.js (needs to be ensured it exists/is accessible)
+    if (typeof discount !== "undefined" && discount > 0) {
+        promoDiscount = discount;
+    }
+
+    const totalDiscount = globalDiscount + promoDiscount;
+    const taxableAmount = Math.max(0, subtotal - totalDiscount);
+
+    // 3. Extra Charges
+    let chargesTotal = 0;
+    let chargesHtml = "";
+    (settings.extraCharges || []).forEach((charge) => {
+        let amount = 0;
+        if (charge.type === "percent") {
+            amount = Math.round(taxableAmount * (charge.value / 100));
+        } else {
+            amount = charge.value;
+        }
+        chargesTotal += amount;
+        chargesHtml += `
+            <div class="bill-row">
+                <span>${charge.name}</span>
+                <span>₹${formatPrice(amount)}</span>
+            </div>
+        `;
+    });
+
+    const finalTotal = taxableAmount + chargesTotal;
+
+    // Update UI Elements
+    const subtotalEl = document.getElementById("summary-subtotal"); // Updated ID
+    if (subtotalEl) subtotalEl.innerText = formatPrice(subtotal);
+
+    // Update Discount UI
+    const discountRow = document.getElementById("summary-discount-row"); // Updated ID
+    const discountEl = document.getElementById("summary-discount"); // Updated ID
+
+    if (discountRow && discountEl) {
+        if (totalDiscount > 0) {
+            discountRow.style.display = "flex";
+            discountEl.innerText = formatPrice(totalDiscount);
+        } else {
+            discountRow.style.display = "none";
+        }
+    }
+
+    // Update Extra Charges
+    const extraChargesContainer = document.getElementById(
+        "extra-charges-container"
+    ); // Updated ID
+    if (extraChargesContainer) extraChargesContainer.innerHTML = chargesHtml;
+
+    // Update Final Total
+    if (totalEl) totalEl.innerText = formatPrice(finalTotal);
+}
+
+function applyPromoCode() {
+    const input = document.getElementById("promo-code-input");
+    const message = document.getElementById("promo-message");
+    const code = input.value.trim().toUpperCase();
+
+    if (!code) {
+        message.textContent = "Please enter a code";
+        message.style.color = "red";
+        return;
+    }
+
+    const settings = getGlobalSettings();
+    const promo = (settings.promoCodes || []).find((p) => p.code === code);
+
+    if (promo) {
+        // Calculate promo discount
+        const subtotal = cart.reduce((sum, item) => {
+            const { price } = calculateItemPrice(item);
+            return sum + price * item.quantity;
+        }, 0);
+
+        // Apply global offer first to get base for promo? Or base on subtotal?
+        // Let's base on subtotal for simplicity unless specified otherwise.
+        // Actually, usually promos apply after other discounts.
+        let globalDiscount = 0;
+        if (settings.globalOffer && settings.globalOffer.active) {
+            if (settings.globalOffer.type === "percent") {
+                globalDiscount = Math.round(
+                    subtotal * (settings.globalOffer.value / 100)
+                );
+            } else {
+                globalDiscount = settings.globalOffer.value;
+            }
+        }
+        const baseAmount = Math.max(0, subtotal - globalDiscount);
+
+        if (promo.type === "percent") {
+            discount = Math.round(baseAmount * (promo.value / 100));
+        } else {
+            discount = promo.value;
+        }
+
+        message.textContent = `Promo Applied: ${code}`;
+        message.style.color = "green";
+        loadPaymentSummary();
+    } else {
+        discount = 0;
+        message.textContent = "Invalid Promo Code";
+        message.style.color = "red";
+        loadPaymentSummary();
+    }
 }
 
 function selectPayment(method) {
@@ -991,7 +1278,10 @@ function processPayment() {
             return showToast("Please enter Card Number");
     }
 
-    const orderId = "TB-" + Math.floor(Math.random() * 90000 + 10000);
+    let lastOrderId = parseInt(localStorage.getItem("LAST_ORDER_ID")) || 1000;
+    lastOrderId++;
+    localStorage.setItem("LAST_ORDER_ID", lastOrderId);
+    const orderId = lastOrderId;
     const total = document.getElementById("payment-total")
         ? document.getElementById("payment-total").innerText
         : "0";
@@ -1000,10 +1290,50 @@ function processPayment() {
         (a) => a.id === addressId
     );
 
+    const subtotal = cart.reduce((sum, i) => sum + i.price * i.quantity, 0);
+    const settings = getGlobalSettings();
+
+    // Recalculate discounts and charges for the order record
+    let globalDiscount = 0;
+    if (settings.globalOffer && settings.globalOffer.active) {
+        if (settings.globalOffer.type === "percent") {
+            globalDiscount = Math.round(
+                subtotal * (settings.globalOffer.value / 100)
+            );
+        } else {
+            globalDiscount = settings.globalOffer.value;
+        }
+    }
+
+    // Promo discount is already applied to 'discount' global variable or we can recalculate if we stored the code
+    // For now, let's use the 'discount' variable which holds the promo discount amount
+    let promoDiscount = discount || 0;
+
+    const totalDiscount = globalDiscount + promoDiscount;
+    const taxableAmount = Math.max(0, subtotal - totalDiscount);
+
+    let chargesTotal = 0;
+    const orderCharges = (settings.extraCharges || []).map((charge) => {
+        let amount = 0;
+        if (charge.type === "percent") {
+            amount = Math.round(taxableAmount * (charge.value / 100));
+        } else {
+            amount = charge.value;
+        }
+        chargesTotal += amount;
+        return { ...charge, amount };
+    });
+
+    // Verify total matches
+    // const calculatedTotal = taxableAmount + chargesTotal;
+
     const newOrder = {
         id: orderId,
         items: cart,
-        total: total,
+        subtotal: subtotal,
+        discount: totalDiscount,
+        charges: orderCharges,
+        total: total, // Trusting the UI total for now, or we could use calculatedTotal
         date: new Date().toLocaleDateString(),
         status: "Preparing",
         timestamp: Date.now(),
@@ -1020,7 +1350,7 @@ function processPayment() {
 
     showToast("Order Placed Successfully!");
     setTimeout(() => {
-        window.location.href = "profile.html";
+        window.location.href = "tracker.html";
     }, 2000);
 }
 
@@ -1118,10 +1448,9 @@ function loadPaymentAddresses() {
         return;
     }
 
-    container.innerHTML =
-        currentUser.addresses
-            .map(
-                (addr) => `
+    container.innerHTML = currentUser.addresses
+        .map(
+            (addr) => `
         <div class="payment-option address-option ${
             addr.isDefault ? "selected" : ""
         }" onclick="selectPaymentAddress(${addr.id})">
@@ -1136,19 +1465,18 @@ function loadPaymentAddresses() {
             </label>
         </div>
     `
-            )
-            .join("") +
-        `<button class="cta-button" onclick="openAddressModal()" style="margin-top:10px; width:100%; background:#6c757d;">+ Add New Address</button>`;
+        )
+        .join("");
 }
 
 function selectPaymentAddress(id) {
     document
-        .querySelectorAll(".address-option")
+        .querySelectorAll(".address-card")
         .forEach((el) => el.classList.remove("selected"));
     const radio = document.getElementById(`addr-${id}`);
     if (radio) {
         radio.checked = true;
-        radio.closest(".address-option").classList.add("selected");
+        radio.closest(".address-card").classList.add("selected");
     }
 }
 
@@ -1208,35 +1536,34 @@ function deleteAddress(id) {
 }
 
 // ==========================================================================
-// 9. CHAT SYSTEM
+// 9. CHAT SYSTEM (User-Centric)
 // ==========================================================================
 
-function openChat(orderId, userEmail) {
-    let allUsers = JSON.parse(localStorage.getItem("ALL_USERS")) || [];
-    const user = allUsers.find((u) => u.email === userEmail);
-    if (!user) return showToast("User not found");
-    const order = user.orders.find((o) => o.id === orderId);
-    if (!order) return showToast("Order not found");
+let currentChatUserEmail = null;
 
-    currentChatOrder = { orderId, userEmail };
-
-    const chatOrderIdEl = document.getElementById("chat-order-id");
-    if (chatOrderIdEl) {
-        chatOrderIdEl.innerText = `Order #${orderId}`;
-        let statusBadge = chatOrderIdEl.nextElementSibling;
-        if (
-            !statusBadge ||
-            !statusBadge.classList.contains("order-status-badge")
-        ) {
-            statusBadge = document.createElement("div");
-            statusBadge.className = "order-status-badge";
-            chatOrderIdEl.parentNode.insertBefore(
-                statusBadge,
-                chatOrderIdEl.nextSibling
-            );
-        }
-        statusBadge.innerText = order.status;
+function openChat(userEmail = null) {
+    if (!currentUser && !userEmail) {
+        showToast("Please login to chat");
+        openLogin();
+        return;
     }
+
+    const email = userEmail || currentUser.email;
+    currentChatUserEmail = email;
+
+    const chatTitle = document.getElementById("chat-order-id");
+    if (chatTitle) {
+        chatTitle.innerText = "TastyBites Messages";
+        // Remove status badge if it exists
+        const statusBadge = chatTitle.nextElementSibling;
+        if (
+            statusBadge &&
+            statusBadge.classList.contains("order-status-badge")
+        ) {
+            statusBadge.remove();
+        }
+    }
+
     renderChatMessages();
     const modal = document.getElementById("chat-modal");
     if (modal) modal.classList.add("active");
@@ -1245,28 +1572,34 @@ function openChat(orderId, userEmail) {
 function closeChat() {
     const modal = document.getElementById("chat-modal");
     if (modal) modal.classList.remove("active");
-    currentChatOrder = null;
+    currentChatUserEmail = null;
 }
 
 function renderChatMessages() {
-    if (!currentChatOrder) return;
+    if (!currentChatUserEmail) return;
+
     let allUsers = JSON.parse(localStorage.getItem("ALL_USERS")) || [];
-    const user = allUsers.find((u) => u.email === currentChatOrder.userEmail);
-    const order = user.orders.find((o) => o.id === currentChatOrder.orderId);
+    const user = allUsers.find((u) => u.email === currentChatUserEmail);
+
     const chatBody = document.getElementById("chat-body");
     if (!chatBody) return;
 
-    if (!order.chat || order.chat.length === 0) {
+    if (!user || !user.chatMessages || user.chatMessages.length === 0) {
         chatBody.innerHTML =
-            '<p style="text-align:center; color:#888; margin-top:20px;">No messages yet. Start chatting!</p>';
+            '<p style="text-align:center; color:#888; margin-top:20px;">No messages yet. Start chatting with us!</p>';
     } else {
-        chatBody.innerHTML = order.chat
+        chatBody.innerHTML = user.chatMessages
             .map((msg) => {
+                // Determine if the message is from "me" (the current viewer)
+                // If viewer is admin, "me" is sender "admin".
+                // If viewer is user, "me" is sender "user".
+                const isAdminView =
+                    window.location.href.includes("admin.html") ||
+                    window.location.href.includes("customer_management.html");
                 const isMe =
-                    (msg.sender === "admin" &&
-                        window.location.href.includes("admin.html")) ||
-                    (msg.sender === "user" &&
-                        !window.location.href.includes("admin.html"));
+                    (isAdminView && msg.sender === "admin") ||
+                    (!isAdminView && msg.sender === "user");
+
                 return `
                 <div class="chat-message ${isMe ? "me" : "other"}">
                     <div class="msg-bubble">${msg.text}</div>
@@ -1285,40 +1618,44 @@ function renderChatMessages() {
 }
 
 function sendChatMessage() {
-    if (!currentChatOrder) return;
+    if (!currentChatUserEmail) return;
     const input = document.getElementById("chat-input");
     const text = input.value.trim();
     if (!text) return;
 
-    const sender = window.location.href.includes("admin.html")
-        ? "admin"
-        : "user";
+    const isAdminView =
+        window.location.href.includes("admin.html") ||
+        window.location.href.includes("customer_management.html");
+    const sender = isAdminView ? "admin" : "user";
+
     let allUsers = JSON.parse(localStorage.getItem("ALL_USERS")) || [];
     const userIndex = allUsers.findIndex(
-        (u) => u.email === currentChatOrder.userEmail
+        (u) => u.email === currentChatUserEmail
     );
-    if (userIndex === -1) return;
-    const orderIndex = allUsers[userIndex].orders.findIndex(
-        (o) => o.id === currentChatOrder.orderId
-    );
-    if (orderIndex === -1) return;
 
-    if (!allUsers[userIndex].orders[orderIndex].chat)
-        allUsers[userIndex].orders[orderIndex].chat = [];
-    allUsers[userIndex].orders[orderIndex].chat.push({
+    if (userIndex === -1) return;
+
+    if (!allUsers[userIndex].chatMessages) {
+        allUsers[userIndex].chatMessages = [];
+    }
+
+    allUsers[userIndex].chatMessages.push({
         sender,
         text,
         timestamp: Date.now(),
     });
 
     localStorage.setItem("ALL_USERS", JSON.stringify(allUsers));
-    if (sender === "user") {
+
+    // Sync with Current User if we are the user
+    if (!isAdminView) {
         let currentUser = JSON.parse(localStorage.getItem("CURRENT_USER"));
-        if (currentUser && currentUser.email === currentChatOrder.userEmail) {
-            currentUser.orders = allUsers[userIndex].orders;
+        if (currentUser && currentUser.email === currentChatUserEmail) {
+            currentUser.chatMessages = allUsers[userIndex].chatMessages;
             localStorage.setItem("CURRENT_USER", JSON.stringify(currentUser));
         }
     }
+
     input.value = "";
     renderChatMessages();
 }
@@ -1327,20 +1664,16 @@ function pollChatMessages() {
     if (!currentUser) return;
     let allUsers = JSON.parse(localStorage.getItem("ALL_USERS")) || [];
     const user = allUsers.find((u) => u.email === currentUser.email);
-    if (!user || !user.orders) return;
+    if (!user || !user.chatMessages) return;
 
     let hasNew = false;
-    user.orders.forEach((order) => {
-        if (order.chat) {
-            order.chat.forEach((msg) => {
-                if (msg.sender === "admin" && msg.timestamp > lastChatCheck)
-                    hasNew = true;
-            });
-        }
+    user.chatMessages.forEach((msg) => {
+        if (msg.sender === "admin" && msg.timestamp > lastChatCheck)
+            hasNew = true;
     });
 
     if (hasNew) {
-        showToast("New message from Admin!");
+        showToast("New message from TastyBites!");
         const badge = document.getElementById("chat-badge");
         if (badge) {
             badge.classList.remove("hidden");
@@ -1354,80 +1687,35 @@ function startChatPolling() {
     setInterval(pollChatMessages, 5000);
 }
 
+function initContactPageChat() {
+    // Just open the global chat for the current user
+    if (!currentUser) {
+        const chatBody = document.getElementById("chat-body");
+        if (chatBody)
+            chatBody.innerHTML =
+                '<p class="chat-placeholder">Please <a href="#" onclick="openLogin()">login</a> to chat with us.</p>';
+        return;
+    }
+    openChat(currentUser.email);
+}
+
+function openGlobalChat() {
+    openChat(); // Opens for current user
+}
+
 function addGlobalChatButton() {
     if (
         document.getElementById("global-chat-btn") ||
-        window.location.href.includes("admin.html")
+        window.location.href.includes("admin") // Don't show on admin pages
     )
         return;
     const btn = document.createElement("button");
     btn.id = "global-chat-btn";
     btn.className = "global-chat-btn";
     btn.innerHTML = '<span class="material-icons">chat</span>';
-    btn.onclick = openGlobalChat;
+    btn.onclick = () => openGlobalChat();
     document.body.appendChild(btn);
 }
-
-function openGlobalChat() {
-    if (!currentUser) {
-        showToast("Please login to chat");
-        openLogin();
-        return;
-    }
-    if (!currentUser.orders || currentUser.orders.length === 0) {
-        showToast("No orders to chat about");
-        return;
-    }
-    const sortedOrders = currentUser.orders
-        .slice()
-        .sort((a, b) => b.timestamp - a.timestamp);
-    openChat(sortedOrders[0].id, currentUser.email);
-}
-
-function initContactPageChat() {
-    if (!currentUser) {
-        const chatBody = document.getElementById("chat-body");
-        if (chatBody)
-            chatBody.innerHTML =
-                '<p class="chat-placeholder">Please <a href="#" onclick="openLogin()">login</a> to chat about your orders.</p>';
-        return;
-    }
-    if (!currentUser.orders || currentUser.orders.length === 0) {
-        const chatBody = document.getElementById("chat-body");
-        if (chatBody)
-            chatBody.innerHTML =
-                '<p class="chat-placeholder">You have no orders to chat about.</p>';
-        return;
-    }
-    const sortedOrders = currentUser.orders
-        .slice()
-        .sort((a, b) => b.timestamp - a.timestamp);
-    const latestOrder = sortedOrders[0];
-    currentChatOrder = {
-        orderId: latestOrder.id,
-        userEmail: currentUser.email,
-    };
-
-    const chatOrderIdEl = document.getElementById("chat-order-id");
-    if (chatOrderIdEl) {
-        chatOrderIdEl.innerText = `Chat - Order #${latestOrder.id}`;
-        let statusBadge = chatOrderIdEl.nextElementSibling;
-        if (
-            !statusBadge ||
-            !statusBadge.classList.contains("order-status-badge")
-        ) {
-            statusBadge = document.createElement("div");
-            statusBadge.className = "order-status-badge";
-            chatOrderIdEl.parentNode.insertBefore(
-                statusBadge,
-                chatOrderIdEl.nextSibling
-            );
-        }
-        statusBadge.innerText = latestOrder.status;
-    }
-    renderChatMessages();
-}
-
 // ==========================================================================
 // 10. ADMIN DASHBOARD
 // ==========================================================================
@@ -1438,14 +1726,10 @@ function handleAdminLogin(e) {
     const pass = document.getElementById("admin-pass").value;
 
     if (email === "admin@tastybites.com" && pass === "admin123") {
-        localStorage.setItem("ADMIN_LOGGED_IN", "true");
-        document.getElementById("admin-login-modal").style.display = "none";
-        const dashboard = document.getElementById("admin-dashboard");
-        if (dashboard) {
-            dashboard.style.display = "flex";
-            loadAdminDashboard();
-        }
-        showToast("Welcome, Admin!");
+        localStorage.setItem("isAdmin", "true");
+        // Redirect to new admin panel
+        window.location.href = "admin_panel/admin_home.html";
+        return;
     } else {
         showToast("Invalid Admin Credentials");
     }
@@ -1481,78 +1765,89 @@ function loadAdminDashboard() {
     let totalOrders = 0;
     let totalRevenue = 0;
     let pendingOrders = 0;
-    tbody.innerHTML = "";
 
-    allUsers.forEach((user) => {
-        if (user.orders) {
-            user.orders.forEach((order) => {
-                totalOrders++;
-                totalRevenue += parseInt(order.total.replace(/,/g, ""));
-                if (order.status !== "Delivered") pendingOrders++;
+    if (tbody) {
+        tbody.innerHTML = "";
+        allUsers.forEach((user) => {
+            if (user.orders) {
+                user.orders.forEach((order) => {
+                    totalOrders++;
+                    totalRevenue += parseInt(order.total.replace(/,/g, ""));
+                    if (order.status !== "Delivered") pendingOrders++;
 
-                const tr = document.createElement("tr");
-                tr.innerHTML = `
-                    <td data-label="Order ID" style="font-weight:bold;">${
-                        order.id
-                    }</td>
-                    <td data-label="Customer">${
-                        user.name
-                    }<br><span style="font-size:0.8rem; color:#888;">${
-                    user.email
-                }</span></td>
-                    <td data-label="Items">${order.items.length} Items</td>
-                    <td data-label="Total">${order.total}</td>
-                    <td data-label="Date">${order.date}</td>
-                    <td data-label="Status">
-                        <select class="status-select" id="status-${order.id}">
-                            <option value="Processing" ${
-                                order.status === "Processing" ? "selected" : ""
-                            }>Processing</option>
-                            <option value="Preparing" ${
-                                order.status === "Preparing" ? "selected" : ""
-                            }>Preparing</option>
-                            <option value="Out for Delivery" ${
-                                order.status === "Out for Delivery"
-                                    ? "selected"
-                                    : ""
-                            }>Out for Delivery</option>
-                            <option value="Delivered" ${
-                                order.status === "Delivered" ? "selected" : ""
-                            }>Delivered</option>
-                            <option value="Cancelled by Restaurant" ${
-                                order.status === "Cancelled by Restaurant"
-                                    ? "selected"
-                                    : ""
-                            }>Cancelled by Restaurant</option>
-                        </select>
-                    </td>
-                    <td data-label="Actions">
-                        <button class="btn-save" onclick="openChat('${
+                    const tr = document.createElement("tr");
+                    tr.innerHTML = `
+                        <td data-label="Order ID" style="font-weight:bold;">${
                             order.id
-                        }', '${
-                    user.email
-                }')" style="background: #17a2b8; margin-bottom: 5px; border-radius: 50%; width: 40px; height: 40px; padding: 0; display: inline-flex; align-items: center; justify-content: center;" title="Chat"><span class="material-icons">chat_bubble</span></button>
-                        <button class="btn-save" onclick="updateOrderStatus('${
-                            user.email
-                        }', '${
-                    order.id
-                }')" style="border-radius: 50%; width: 40px; height: 40px; padding: 0; display: inline-flex; align-items: center; justify-content: center;" title="Update Status"><span class="material-icons">arrow_circle_up</span></button>
-                        <button class="btn-delete" onclick="deleteOrder('${
-                            user.email
-                        }', '${
-                    order.id
-                }')" style="margin-left:5px; border-radius: 50%; width: 40px; height: 40px; padding: 0; display: inline-flex; align-items: center; justify-content: center;" title="Delete Order"><span class="material-icons">delete</span></button>
-                    </td>
-                `;
-                tbody.prepend(tr);
-            });
-        }
-    });
+                        }</td>
+                        <td data-label="Customer">${
+                            user.name
+                        }<br><span style="font-size:0.8rem; color:#888;">${
+                        user.email
+                    }</span></td>
+                        <td data-label="Items">${order.items.length} Items</td>
+                        <td data-label="Total">${order.total}</td>
+                        <td data-label="Date">${order.date}</td>
+                        <td data-label="Status">
+                            <select class="status-select" id="status-${
+                                order.id
+                            }">
+                                <option value="Processing" ${
+                                    order.status === "Processing"
+                                        ? "selected"
+                                        : ""
+                                }>Processing</option>
+                                <option value="Preparing" ${
+                                    order.status === "Preparing"
+                                        ? "selected"
+                                        : ""
+                                }>Preparing</option>
+                                <option value="Out for Delivery" ${
+                                    order.status === "Out for Delivery"
+                                        ? "selected"
+                                        : ""
+                                }>Out for Delivery</option>
+                                <option value="Delivered" ${
+                                    order.status === "Delivered"
+                                        ? "selected"
+                                        : ""
+                                }>Delivered</option>
+                                <option value="Cancelled by Restaurant" ${
+                                    order.status === "Cancelled by Restaurant"
+                                        ? "selected"
+                                        : ""
+                                }>Cancelled by Restaurant</option>
+                            </select>
+                        </td>
+                        <td data-label="Actions">
+                            <button class="btn-save" onclick="openChat('${
+                                user.email
+                            }')" style="background: #17a2b8; margin-bottom: 5px; border-radius: 50%; width: 40px; height: 40px; padding: 0; display: inline-flex; align-items: center; justify-content: center;" title="Chat"><span class="material-icons">chat_bubble</span></button>
+                            <button class="btn-save" onclick="updateOrderStatus('${
+                                user.email
+                            }', '${
+                        order.id
+                    }')" style="border-radius: 50%; width: 40px; height: 40px; padding: 0; display: inline-flex; align-items: center; justify-content: center;" title="Update Status"><span class="material-icons">arrow_circle_up</span></button>
+                            <button class="btn-delete" onclick="deleteOrder('${
+                                user.email
+                            }', '${
+                        order.id
+                    }')" style="margin-left:5px; border-radius: 50%; width: 40px; height: 40px; padding: 0; display: inline-flex; align-items: center; justify-content: center;" title="Delete Order"><span class="material-icons">delete</span></button>
+                        </td>
+                    `;
+                    tbody.prepend(tr);
+                });
+            }
+        });
+    }
 
-    document.getElementById("total-orders").innerText = totalOrders;
-    document.getElementById("total-revenue").innerText =
-        "₹" + formatPrice(totalRevenue);
-    document.getElementById("pending-orders").innerText = pendingOrders;
+    if (document.getElementById("total-orders"))
+        document.getElementById("total-orders").innerText = totalOrders;
+    if (document.getElementById("total-revenue"))
+        document.getElementById("total-revenue").innerText =
+            "₹" + formatPrice(totalRevenue);
+    if (document.getElementById("pending-orders"))
+        document.getElementById("pending-orders").innerText = pendingOrders;
 }
 
 function updateOrderStatus(userEmail, orderId) {
@@ -1632,6 +1927,8 @@ function switchAdminSection(section) {
     if (section === "orders") loadAdminDashboard();
     if (section === "customers") loadCustomersSection();
     if (section === "products") loadProductsSection();
+    if (section === "settings") loadSettingsSection();
+    if (section === "categories") loadCategoriesSection();
 }
 
 function loadCustomersSection() {
@@ -1650,6 +1947,11 @@ function loadCustomersSection() {
             <td data-label="Addresses">${
                 user.addresses ? user.addresses.length : 0
             }</td>
+            <td data-label="Action">
+                <button class="cta-button" style="padding: 5px 10px; font-size: 0.8rem;" onclick="window.location.href='customer.html?email=${
+                    user.email
+                }'">View</button>
+            </td>
         `;
         tbody.appendChild(tr);
     });
@@ -1658,6 +1960,7 @@ function loadCustomersSection() {
 function loadProductsSection() {
     const items = getMenuItems();
     const tbody = document.getElementById("admin-products-body");
+    populateCategoryDropdown(); // Ensure dropdown is populated
     if (!tbody) return;
     tbody.innerHTML = "";
     items.forEach((item) => {
@@ -1691,6 +1994,132 @@ function deleteProduct(id) {
     loadProductsSection();
 }
 
+// Settings Section Logic
+function loadSettingsSection() {
+    const settings = getGlobalSettings();
+
+    // 1. Load Charges
+    const chargesBody = document.getElementById("settings-charges-body");
+    if (chargesBody) {
+        chargesBody.innerHTML = "";
+        (settings.extraCharges || []).forEach((charge, index) => {
+            const tr = document.createElement("tr");
+            tr.innerHTML = `
+                <td>${charge.name}</td>
+                <td>${
+                    charge.type === "percent" ? "Percent (%)" : "Flat (₹)"
+                }</td>
+                <td>${charge.value}</td>
+                <td><button class="btn-delete" onclick="handleDeleteCharge(${index})" style="border-radius: 50%; width: 30px; height: 30px; padding: 0; display: inline-flex; align-items: center; justify-content: center;"><span class="material-icons" style="font-size: 16px;">delete</span></button></td>
+            `;
+            chargesBody.appendChild(tr);
+        });
+    }
+
+    // 2. Load Global Offer
+    const globalOffer = settings.globalOffer || {
+        active: false,
+        name: "",
+        type: "percent",
+        value: 0,
+    };
+    if (document.getElementById("global-offer-active"))
+        document.getElementById("global-offer-active").checked =
+            globalOffer.active;
+    if (document.getElementById("global-offer-name"))
+        document.getElementById("global-offer-name").value = globalOffer.name;
+    if (document.getElementById("global-offer-type"))
+        document.getElementById("global-offer-type").value = globalOffer.type;
+    if (document.getElementById("global-offer-value"))
+        document.getElementById("global-offer-value").value = globalOffer.value;
+
+    // 3. Load Promo Codes
+    const promosBody = document.getElementById("settings-promos-body");
+    if (promosBody) {
+        promosBody.innerHTML = "";
+        (settings.promoCodes || []).forEach((promo, index) => {
+            const tr = document.createElement("tr");
+            tr.innerHTML = `
+                <td>${promo.code}</td>
+                <td>${
+                    promo.type === "percent" ? "Percent (%)" : "Flat (₹)"
+                }</td>
+                <td>${promo.value}</td>
+                <td><button class="btn-delete" onclick="handleDeletePromo(${index})" style="border-radius: 50%; width: 30px; height: 30px; padding: 0; display: inline-flex; align-items: center; justify-content: center;"><span class="material-icons" style="font-size: 16px;">delete</span></button></td>
+            `;
+            promosBody.appendChild(tr);
+        });
+    }
+}
+
+function handleAddCharge(e) {
+    e.preventDefault();
+    const name = document.getElementById("new-charge-name").value;
+    const type = document.getElementById("new-charge-type").value;
+    const value = parseFloat(document.getElementById("new-charge-value").value);
+
+    const settings = getGlobalSettings();
+    if (!settings.extraCharges) settings.extraCharges = [];
+    settings.extraCharges.push({ name, type, value });
+    updateGlobalSettings(settings);
+
+    document.getElementById("new-charge-name").value = "";
+    document.getElementById("new-charge-value").value = "";
+    showToast("Charge Added");
+    loadSettingsSection();
+}
+
+function handleDeleteCharge(index) {
+    if (!confirm("Delete this charge?")) return;
+    const settings = getGlobalSettings();
+    settings.extraCharges.splice(index, 1);
+    updateGlobalSettings(settings);
+    loadSettingsSection();
+}
+
+function handleGlobalOfferSave(e) {
+    e.preventDefault();
+    const active = document.getElementById("global-offer-active").checked;
+    const name = document.getElementById("global-offer-name").value;
+    const type = document.getElementById("global-offer-type").value;
+    const value = parseFloat(
+        document.getElementById("global-offer-value").value
+    );
+
+    const settings = getGlobalSettings();
+    settings.globalOffer = { active, name, type, value };
+    updateGlobalSettings(settings);
+    showToast("Global Offer Saved");
+}
+
+function handleAddPromo(e) {
+    e.preventDefault();
+    const code = document.getElementById("new-promo-code").value.toUpperCase();
+    const type = document.getElementById("new-promo-type").value;
+    const value = parseFloat(document.getElementById("new-promo-value").value);
+
+    const settings = getGlobalSettings();
+    if (!settings.promoCodes) settings.promoCodes = [];
+    if (settings.promoCodes.find((p) => p.code === code))
+        return showToast("Code already exists");
+
+    settings.promoCodes.push({ code, type, value });
+    updateGlobalSettings(settings);
+
+    document.getElementById("new-promo-code").value = "";
+    document.getElementById("new-promo-value").value = "";
+    showToast("Promo Code Added");
+    loadSettingsSection();
+}
+
+function handleDeletePromo(index) {
+    if (!confirm("Delete this promo code?")) return;
+    const settings = getGlobalSettings();
+    settings.promoCodes.splice(index, 1);
+    updateGlobalSettings(settings);
+    loadSettingsSection();
+}
+
 let editingProductId = null;
 
 function handleProductSave(e) {
@@ -1699,19 +2128,36 @@ function handleProductSave(e) {
     const category = document.getElementById("prod-category").value;
     const price = parseInt(document.getElementById("prod-price").value);
     const image = document.getElementById("prod-image").value;
+    const offerType = document.getElementById("prod-offer-type").value;
+    const offerValue =
+        parseFloat(document.getElementById("prod-offer-value").value) || 0;
 
     let items = getMenuItems();
 
     if (editingProductId) {
         const index = items.findIndex((i) => i.id === editingProductId);
         if (index !== -1) {
-            items[index] = { ...items[index], name, category, price, image };
+            items[index] = {
+                ...items[index],
+                name,
+                category,
+                price,
+                image,
+                offer: { type: offerType, value: offerValue },
+            };
             showToast("Product Updated");
         }
     } else {
         const newId =
             items.length > 0 ? Math.max(...items.map((i) => i.id)) + 1 : 1;
-        items.push({ id: newId, name, category, price, image });
+        items.push({
+            id: newId,
+            name,
+            category,
+            price,
+            image,
+            offer: { type: offerType, value: offerValue },
+        });
         showToast("Product Added");
     }
 
@@ -1730,16 +2176,74 @@ function editProduct(id) {
     document.getElementById("prod-price").value = item.price;
     document.getElementById("prod-image").value = item.image;
 
+    if (item.offer) {
+        document.getElementById("prod-offer-type").value = item.offer.type;
+        document.getElementById("prod-offer-value").value = item.offer.value;
+    } else {
+        document.getElementById("prod-offer-type").value = "none";
+        document.getElementById("prod-offer-value").value = 0;
+    }
+
     editingProductId = id;
     document.getElementById("product-form-title").innerText = "Edit Product";
+    populateCategoryDropdown(item.category);
     window.scrollTo(0, 0);
 }
 
 function resetProductForm() {
     document.getElementById("prod-name").value = "";
-    document.getElementById("prod-category").value = "burger";
+    populateCategoryDropdown();
     document.getElementById("prod-price").value = "";
     document.getElementById("prod-image").value = "";
+    document.getElementById("prod-offer-type").value = "none";
+    document.getElementById("prod-offer-value").value = 0;
     editingProductId = null;
     document.getElementById("product-form-title").innerText = "Add New Product";
+}
+
+function populateCategoryDropdown(selected = null) {
+    const select = document.getElementById("prod-category");
+    if (!select) return;
+    const categories = getCategories();
+    select.innerHTML = categories
+        .map(
+            (c) =>
+                `<option value="${c.id}" ${
+                    selected === c.id ? "selected" : ""
+                }>${c.name}</option>`
+        )
+        .join("");
+}
+
+// ==========================================================================
+// 11. SETTINGS
+// ==========================================================================
+
+// ==========================================================================
+// 12. CATEGORIES
+// ==========================================================================
+
+function loadCategoriesSection() {
+    const categories = getCategories();
+    const tbody = document.getElementById("admin-categories-body");
+    if (!tbody) return;
+    tbody.innerHTML = "";
+    categories.forEach((cat) => {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+            <td>${cat.id}</td>
+            <td>${cat.name}</td>
+            <td>
+                <button class="btn-delete" onclick="deleteCategory('${cat.id}')" style="border-radius: 50%; width: 40px; height: 40px; padding: 0; display: inline-flex; align-items: center; justify-content: center;"><span class="material-icons">delete</span></button>
+            </td>
+        `;
+        tbody.appendChild(tr);
+    });
+}
+
+function handleAddCategory(e) {
+    e.preventDefault();
+    const name = document.getElementById("new-cat-name").value;
+    addCategory(name);
+    document.getElementById("new-cat-name").value = "";
 }

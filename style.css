@@ -253,38 +253,30 @@ select {
 }
 
 /* --- Toast Notifications --- */
-#toast-box {
-    position: fixed;
-    top: 80px;
-    left: 30px;
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 10px;
-    z-index: 2000;
-}
-
+/* --- Toast Notifications --- */
 .toast {
-    background: var(--dark);
+    visibility: hidden;
+    min-width: 250px;
+    background-color: #333;
     color: #fff;
-    padding: 15px 25px;
-    border-radius: 5px;
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
-    border-left: 5px solid var(--primary);
-    transform: translateX(-100%);
-    transition: transform 0.3s ease;
-    display: flex;
-    align-items: center;
-    gap: 10px;
+    text-align: center;
+    border-radius: 8px;
+    padding: 16px;
+    position: fixed;
+    z-index: 3000;
+    left: 50%;
+    bottom: 30px;
+    transform: translateX(-50%);
+    font-size: 17px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    opacity: 0;
+    transition: opacity 0.3s, bottom 0.3s;
 }
 
 .toast.show {
-    transform: translateX(0);
-}
-
-.toast i {
-    color: var(--primary);
-    font-size: 1.2rem;
+    visibility: visible;
+    opacity: 1;
+    bottom: 50px;
 }
 
 /* ==========================================================================
@@ -1237,7 +1229,7 @@ footer {
 
 .add-address-btn {
     background: transparent;
-    border: 2px dashed var(--primary);
+    border: 2px solid var(--primary);
     color: var(--primary);
     padding: 8px 15px;
     border-radius: 8px;
@@ -1249,79 +1241,6 @@ footer {
 
 .add-address-btn:hover {
     background: rgba(255, 99, 71, 0.1);
-}
-
-/* --- Payment Page --- */
-.payment-section {
-    padding: 120px 5% 60px;
-    min-height: 80vh;
-    display: flex;
-    justify-content: center;
-    background-color: var(--bg-color);
-}
-
-.payment-container {
-    width: 100%;
-    max-width: 1000px;
-    animation: fadeInUp 0.5s ease-out;
-}
-
-.payment-container h2 {
-    text-align: center;
-    margin-bottom: 2rem;
-    color: var(--primary);
-    font-size: 2.5rem;
-}
-
-.payment-grid {
-    display: grid;
-    grid-template-columns: 1fr 1.5fr;
-    gap: 30px;
-}
-
-.order-summary-box,
-.payment-methods-box {
-    background: var(--card-bg);
-    padding: 25px;
-    border-radius: 15px;
-    box-shadow: var(--shadow);
-}
-
-.payment-item {
-    display: flex;
-    justify-content: space-between;
-    margin-bottom: 10px;
-    font-size: 0.95rem;
-    color: var(--text-color);
-}
-
-.payment-total-row {
-    display: flex;
-    justify-content: space-between;
-    margin-top: 20px;
-    padding-top: 15px;
-    border-top: 2px solid var(--border-color);
-    font-size: 1.2rem;
-    font-weight: 700;
-    color: var(--primary);
-}
-
-.payment-option {
-    border: 2px solid var(--border-color);
-    border-radius: 10px;
-    padding: 15px;
-    margin-bottom: 15px;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    display: flex;
-    align-items: center;
-    gap: 15px;
-}
-
-.payment-option:hover,
-.payment-option.selected {
-    border-color: var(--primary);
-    background: rgba(255, 99, 71, 0.05);
 }
 
 .payment-details-fields {
@@ -2022,4 +1941,536 @@ body.dark-mode .review-card p {
     display: block;
     margin-top: 10px;
     margin-bottom: 10px;
+}
+
+/* --- Payment Page Layout --- */
+.payment-section {
+    padding: 3rem 5%;
+    background-color: var(--bg-color);
+    min-height: 80vh;
+}
+
+.payment-container {
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.payment-container h2 {
+    text-align: center;
+    margin-bottom: 2rem;
+    font-size: 2.2rem;
+    color: var(--text-color);
+    font-weight: 700;
+}
+
+.payment-grid {
+    display: grid;
+    grid-template-columns: 1.8fr 1fr; /* Left: Payment/Address, Right: Summary */
+    gap: 30px;
+    align-items: start;
+}
+
+/* Mobile Layout */
+@media (max-width: 900px) {
+    .payment-grid {
+        grid-template-columns: 1fr;
+    }
+
+    /* Move Order Summary to top on mobile */
+    .order-summary-box {
+        order: -1;
+    }
+}
+
+/* --- Payment Cards --- */
+.payment-methods-box,
+.order-summary-box {
+    background: var(--card-bg);
+    padding: 30px;
+    border-radius: 16px;
+    box-shadow: var(--shadow);
+    border: 1px solid var(--border-color);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.payment-methods-box:hover,
+.order-summary-box:hover {
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+}
+
+.payment-methods-box h3,
+.order-summary-box h3 {
+    margin-bottom: 20px;
+    font-size: 1.3rem;
+    color: var(--primary);
+    border-bottom: 2px solid #eee;
+    padding-bottom: 10px;
+    font-weight: 600;
+}
+
+/* --- Order Summary Specifics --- */
+#payment-items-list {
+    max-height: 300px;
+    overflow-y: auto;
+    margin-bottom: 20px;
+    padding-right: 5px;
+}
+
+/* Custom Scrollbar for items list */
+#payment-items-list::-webkit-scrollbar {
+    width: 6px;
+}
+#payment-items-list::-webkit-scrollbar-thumb {
+    background-color: #ccc;
+    border-radius: 10px;
+}
+
+.summary-row {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 12px;
+    font-size: 0.95rem;
+    color: var(--text-color);
+}
+
+.summary-row.total {
+    font-weight: 800;
+    font-size: 1.4rem;
+    color: var(--primary);
+    margin-top: 20px;
+    padding-top: 15px;
+    border-top: 2px dashed #ddd;
+}
+
+.summary-row.discount {
+    color: #2ecc71;
+    font-weight: 600;
+}
+
+/* --- Promo Code --- */
+.promo-section {
+    margin-top: 25px;
+    padding-top: 20px;
+    border-top: 1px solid #eee;
+}
+
+.promo-input-group {
+    display: flex;
+    gap: 10px;
+}
+
+.promo-input-group input {
+    flex: 1;
+    padding: 12px;
+    border: 2px solid #eee;
+    border-radius: 8px;
+    text-transform: uppercase;
+    font-weight: 600;
+    transition: border-color 0.3s;
+}
+
+.promo-input-group input:focus {
+    border-color: var(--primary);
+    outline: none;
+}
+
+.promo-input-group button {
+    padding: 0 20px;
+    border-radius: 8px;
+    font-weight: 600;
+}
+
+/* --- Payment Options --- */
+.payment-option {
+    margin-bottom: 15px;
+    border: 2px solid var(--border-color);
+    border-radius: 10px;
+    overflow: hidden;
+    transition: all 0.3s ease;
+}
+
+.payment-option:hover {
+    border-color: #ccc;
+}
+
+/* Hide default radio */
+.payment-option input[type="radio"] {
+    display: none;
+}
+
+.payment-option label {
+    display: flex;
+    align-items: center;
+    padding: 15px 20px;
+    cursor: pointer;
+    font-weight: 500;
+    font-size: 1rem;
+    gap: 15px;
+    width: 100%;
+}
+
+.payment-option label i {
+    font-size: 1.4rem;
+    color: #888;
+    width: 30px;
+    text-align: center;
+    transition: color 0.3s;
+}
+
+/* Selected State */
+.payment-option input[type="radio"]:checked + label {
+    background-color: rgba(255, 99, 71, 0.05);
+    color: var(--primary);
+}
+
+.payment-option input[type="radio"]:checked + label i {
+    color: var(--primary);
+}
+
+.payment-option input[type="radio"]:checked + label::after {
+    content: "\f00c"; /* FontAwesome Check */
+    font-family: "Font Awesome 6 Free";
+    font-weight: 900;
+    margin-left: auto;
+    color: var(--primary);
+}
+
+.payment-option:has(input:checked) {
+    border-color: var(--primary);
+    box-shadow: 0 4px 10px rgba(255, 99, 71, 0.15);
+}
+
+.payment-details-fields {
+    padding: 0 20px 20px 20px;
+    animation: slideDown 0.3s ease;
+}
+
+.payment-details-fields input {
+    background: var(--input-bg);
+    border: 1px solid var(--border-color);
+    padding: 12px;
+    border-radius: 8px;
+}
+
+.payment-details-fields input:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(255, 99, 71, 0.1);
+}
+
+.card-expiry-cvv {
+    display: flex;
+    gap: 15px;
+    margin-top: 10px;
+    margin-bottom: 10px;
+}
+
+/* --- Address Selection --- */
+.address-card {
+    border: 2px solid var(--border-color);
+    border-radius: 10px;
+    padding: 15px;
+    margin-bottom: 15px;
+    cursor: pointer;
+    transition: all 0.3s;
+    position: relative;
+    background: var(--bg-color);
+}
+
+.address-card:hover {
+    border-color: #bbb;
+}
+
+.address-card.selected {
+    border-color: var(--primary);
+    background-color: rgba(255, 99, 71, 0.03);
+}
+
+.address-card.selected::before {
+    content: "\f00c";
+    font-family: "Font Awesome 6 Free";
+    font-weight: 900;
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    color: var(--primary);
+    font-size: 1.2rem;
+}
+
+.address-card h4 {
+    margin-bottom: 5px;
+    font-size: 1.1rem;
+    color: var(--text-color);
+}
+
+.address-card p {
+    color: #666;
+    font-size: 0.9rem;
+    line-height: 1.4;
+}
+
+#add-new-address-btn {
+    width: 100%;
+    padding: 15px;
+    background: transparent;
+    border: 2px dashed #ccc;
+    color: #888;
+    border-radius: 10px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: all 0.3s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+}
+
+#add-new-address-btn:hover {
+    border-color: var(--primary);
+    color: var(--primary);
+    background: rgba(255, 99, 71, 0.05);
+}
+
+/* Pay Now Button */
+.pay-now-btn {
+    margin-top: 30px;
+    width: 100%;
+    padding: 18px;
+    font-size: 1.2rem;
+    font-weight: 700;
+    letter-spacing: 1px;
+    border-radius: 50px;
+    box-shadow: 0 10px 25px rgba(255, 99, 71, 0.4);
+}
+
+/* ==========================================================================
+   PAYMENT PAGE STYLES (Restored & Fixed)
+   ========================================================================== */
+
+.payment-section {
+    padding: 40px 5%;
+    background-color: var(--bg-color);
+    min-height: 80vh;
+}
+
+.payment-container {
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.payment-container h2 {
+    text-align: center;
+    margin-bottom: 40px;
+    font-size: 2.5rem;
+    color: var(--text-color);
+}
+
+.payment-grid {
+    display: grid;
+    grid-template-columns: 1.5fr 1fr;
+    gap: 30px;
+    align-items: start;
+}
+
+@media (max-width: 900px) {
+    .payment-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+.payment-left,
+.payment-right {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.payment-card {
+    background: var(--card-bg);
+    border-radius: 15px;
+    padding: 25px;
+    box-shadow: var(--shadow);
+    transition: transform 0.3s ease;
+}
+
+.payment-card:hover {
+    transform: translateY(-2px);
+}
+
+.payment-card h3 {
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 1.2rem;
+    color: var(--text-color);
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 15px;
+}
+
+.payment-card h3 .material-icons {
+    color: var(--primary);
+}
+
+/* Address Section */
+.card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 15px;
+    margin-bottom: 20px;
+}
+
+.card-header h3 {
+    border-bottom: none;
+    padding-bottom: 0;
+    margin-bottom: 0;
+}
+
+.add-btn-small {
+    background: transparent;
+    border: 1px solid var(--primary);
+    color: var(--primary);
+    padding: 5px 10px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 0.8rem;
+    transition: 0.3s;
+}
+
+.add-btn-small:hover {
+    background: var(--primary);
+    color: white;
+}
+
+/* Payment Methods */
+.payment-methods-select {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.payment-option {
+    display: flex;
+    align-items: center;
+    padding: 15px;
+    border: 2px solid var(--border-color);
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: relative;
+    background: var(--bg-color);
+}
+
+.payment-option:hover {
+    border-color: #ccc;
+    background: rgba(0, 0, 0, 0.02);
+}
+
+.payment-option input[type="radio"] {
+    display: none;
+}
+
+/* Custom Radio Circle */
+.radio-custom {
+    width: 20px;
+    height: 20px;
+    border: 2px solid #ccc;
+    border-radius: 50%;
+    margin-right: 15px;
+    position: relative;
+    transition: 0.3s;
+}
+
+.payment-option input[type="radio"]:checked + .radio-custom {
+    border-color: var(--primary);
+}
+
+.payment-option input[type="radio"]:checked + .radio-custom::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 10px;
+    height: 10px;
+    background: var(--primary);
+    border-radius: 50%;
+}
+
+.option-details {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.option-title {
+    font-weight: 600;
+    color: var(--text-color);
+    font-size: 1rem;
+}
+
+.option-desc {
+    font-size: 0.85rem;
+    color: #888;
+}
+
+/* Selected State for Payment Option */
+.payment-option:has(input:checked) {
+    border-color: var(--primary);
+    background-color: rgba(255, 99, 71, 0.05);
+    box-shadow: 0 4px 10px rgba(255, 99, 71, 0.1);
+}
+
+/* Order Summary */
+.summary-card {
+    position: sticky;
+    top: 100px;
+}
+
+.payment-items {
+    max-height: 300px;
+    overflow-y: auto;
+    margin-bottom: 10px;
+    padding-right: 5px;
+}
+
+.payment-item {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 10px;
+    font-size: 0.95rem;
+    color: var(--text-color);
+}
+
+.bill-details {
+    border-top: 2px dashed var(--border-color);
+    padding-top: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+#extra-charges-container div {
+    margin-bottom: 10px;
+}
+
+.bill-row {
+    display: flex;
+    justify-content: space-between;
+    color: #666;
+    font-size: 0.95rem;
+}
+
+.bill-row.total-row {
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px solid var(--border-color);
+    font-weight: 800;
+    color: var(--text-color);
+    font-size: 1.2rem;
+}
+
+/* Dark Mode Adjustments */
+body.dark-mode .payment-option:hover {
+    background: rgba(255, 255, 255, 0.05);
 }

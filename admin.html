@@ -152,6 +152,38 @@
                         <span class="material-icons">restaurant_menu</span>
                         Products
                     </li>
+                    <li
+                        onclick="switchAdminSection('settings')"
+                        style="
+                            padding: 15px 20px;
+                            cursor: pointer;
+                            transition: 0.3s;
+                            font-weight: 500;
+                            color: #555;
+                            display: flex;
+                            align-items: center;
+                            gap: 10px;
+                        "
+                    >
+                        <span class="material-icons">settings</span>
+                        Settings
+                    </li>
+                    <li
+                        onclick="switchAdminSection('categories')"
+                        style="
+                            padding: 15px 20px;
+                            cursor: pointer;
+                            transition: 0.3s;
+                            font-weight: 500;
+                            color: #555;
+                            display: flex;
+                            align-items: center;
+                            gap: 10px;
+                        "
+                    >
+                        <span class="material-icons">category</span>
+                        Categories
+                    </li>
                 </ul>
             </aside>
 
@@ -199,143 +231,16 @@
                                 style="background: #fff3e0; color: #ff9800"
                             >
                                 <span class="material-icons">pending</span>
-                            </div>
-                            <div>
-                                <h3>Pending</h3>
-                                <p id="pending-orders">0</p>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="admin-table-container">
-                        <div
-                            style="
-                                display: flex;
-                                justify-content: space-between;
-                                align-items: center;
-                                margin-bottom: 20px;
-                            "
-                        >
-                            <h3>Recent Orders</h3>
-                            <button
-                                onclick="loadOrdersSection()"
-                                style="
-                                    cursor: pointer;
-                                    border: none;
-                                    background: none;
-                                    color: var(--primary);
-                                    font-weight: bold;
-                                "
-                            >
-                                <span
-                                    class="material-icons"
-                                    style="vertical-align: middle"
-                                    >refresh</span
-                                >
-                                Refresh
-                            </button>
-                        </div>
-                        <table class="admin-table">
-                            <thead>
-                                <tr>
-                                    <th>Order ID</th>
-                                    <th>Customer</th>
-                                    <th>Items</th>
-                                    <th>Total</th>
-                                    <th>Date</th>
-                                    <th>Status</th>
-                                    <th>Action</th>
-                                </tr>
-                            </thead>
-                            <tbody id="admin-orders-body"></tbody>
-                        </table>
-                    </div>
-                </section>
-
-                <!-- Customer Data Section -->
-                <section
-                    id="section-customers"
-                    class="admin-section-content"
-                    style="display: none"
-                >
-                    <h2 style="margin-bottom: 20px">Customer Data</h2>
-                    <div class="admin-table-container">
-                        <table class="admin-table">
-                            <thead>
-                                <tr>
-                                    <th>Name</th>
-                                    <th>Email</th>
-                                    <th>Phone</th>
-                                    <th>Total Orders</th>
-                                    <th>Saved Addresses</th>
-                                </tr>
-                            </thead>
-                            <tbody id="admin-customers-body"></tbody>
-                        </table>
-                    </div>
-                </section>
-
-                <!-- Product Management Section -->
-                <section
-                    id="section-products"
-                    class="admin-section-content"
-                    style="display: none"
-                >
-                    <div
-                        style="
-                            display: flex;
-                            justify-content: space-between;
-                            align-items: center;
-                            margin-bottom: 20px;
-                        "
-                    >
-                        <h2>Product Management</h2>
-                    </div>
-
-                    <!-- Product Form -->
-                    <div
-                        class="admin-table-container"
-                        style="margin-bottom: 30px"
-                    >
-                        <h3 id="product-form-title" style="margin-bottom: 15px">
-                            Add New Product
-                        </h3>
-                        <form
-                            onsubmit="handleProductSave(event)"
-                            style="
-                                display: grid;
-                                grid-template-columns: 1fr 1fr;
-                                gap: 20px;
-                            "
-                        >
-                            <div class="form-group">
-                                <label>Product Name</label>
-                                <input type="text" id="prod-name" required />
-                            </div>
-                            <div class="form-group">
-                                <label>Category</label>
-                                <select id="prod-category" required>
-                                    <option value="burger">Burger</option>
-                                    <option value="pizza">Pizza</option>
-                                    <option value="biryani">Biryani</option>
-                                    <option value="meal">Meal</option>
-                                    <option value="fastfood">Fast Food</option>
-                                    <option value="sandwich">Sandwich</option>
-                                    <option value="snacks">Snacks</option>
-                                    <option value="beverages">Beverages</option>
+                                    </option>
                                 </select>
                             </div>
                             <div class="form-group">
-                                <label>Price (₹)</label>
-                                <input type="number" id="prod-price" required />
-                            </div>
-                            <div class="form-group">
-                                <label>Image URL</label>
+                                <label>Offer Value</label>
                                 <input
-                                    type="text"
-                                    id="prod-image"
-                                    placeholder="./assets/..."
-                                    required
+                                    type="number"
+                                    id="prod-offer-value"
+                                    min="0"
+                                    value="0"
                                 />
                             </div>
                             <div
@@ -376,6 +281,273 @@
                                 </tr>
                             </thead>
                             <tbody id="admin-products-body"></tbody>
+                        </table>
+                    </div>
+                </section>
+
+                <!-- Settings Section -->
+                <section
+                    id="section-settings"
+                    class="admin-section-content"
+                    style="display: none"
+                >
+                    <h2 style="margin-bottom: 20px">Global Settings</h2>
+
+                    <!-- Extra Charges -->
+                    <div
+                        class="settings-block"
+                        style="
+                            margin-bottom: 30px;
+                            border: 1px solid #eee;
+                            padding: 20px;
+                            border-radius: 8px;
+                        "
+                    >
+                        <h3>Extra Charges (GST, Delivery, etc.)</h3>
+                        <div class="admin-table-container">
+                            <table
+                                class="admin-table"
+                                style="margin-bottom: 10px"
+                            >
+                                <thead>
+                                    <tr>
+                                        <th>Name</th>
+                                        <th>Type</th>
+                                        <th>Value</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="settings-charges-body"></tbody>
+                            </table>
+                        </div>
+                        <form
+                            onsubmit="handleAddCharge(event)"
+                            style="
+                                display: grid;
+                                grid-template-columns: 2fr 1fr 1fr auto;
+                                gap: 10px;
+                                align-items: end;
+                            "
+                        >
+                            <div class="form-group" style="margin: 0">
+                                <label>Name</label>
+                                <input
+                                    type="text"
+                                    id="new-charge-name"
+                                    required
+                                    placeholder="e.g. Packaging Fee"
+                                />
+                            </div>
+                            <div class="form-group" style="margin: 0">
+                                <label>Type</label>
+                                <select id="new-charge-type">
+                                    <option value="percent">Percent (%)</option>
+                                    <option value="flat">Flat (₹)</option>
+                                </select>
+                            </div>
+                            <div class="form-group" style="margin: 0">
+                                <label>Value</label>
+                                <input
+                                    type="number"
+                                    id="new-charge-value"
+                                    required
+                                    min="0"
+                                    step="0.01"
+                                />
+                            </div>
+                            <button
+                                type="submit"
+                                class="cta-button"
+                                style="padding: 10px"
+                            >
+                                Add
+                            </button>
+                        </form>
+                    </div>
+
+                    <!-- Global Offer -->
+                    <div
+                        class="settings-block"
+                        style="
+                            margin-bottom: 30px;
+                            border: 1px solid #eee;
+                            padding: 20px;
+                            border-radius: 8px;
+                        "
+                    >
+                        <h3>Global Offer (Site-wide Discount)</h3>
+                        <form
+                            onsubmit="handleGlobalOfferSave(event)"
+                            style="
+                                display: grid;
+                                grid-template-columns: auto 2fr 1fr 1fr auto;
+                                gap: 10px;
+                                align-items: end;
+                            "
+                        >
+                            <div
+                                class="form-group"
+                                style="
+                                    margin: 0;
+                                    display: flex;
+                                    align-items: center;
+                                    height: 100%;
+                                "
+                            >
+                                <label style="margin: 0; cursor: pointer">
+                                    <input
+                                        type="checkbox"
+                                        id="global-offer-active"
+                                        style="width: auto; margin-right: 5px"
+                                    />
+                                    Active
+                                </label>
+                            </div>
+                            <div class="form-group" style="margin: 0">
+                                <label>Offer Name</label>
+                                <input
+                                    type="text"
+                                    id="global-offer-name"
+                                    placeholder="e.g. Diwali Sale"
+                                />
+                            </div>
+                            <div class="form-group" style="margin: 0">
+                                <label>Type</label>
+                                <select id="global-offer-type">
+                                    <option value="percent">Percent (%)</option>
+                                    <option value="flat">Flat (₹)</option>
+                                </select>
+                            </div>
+                            <div class="form-group" style="margin: 0">
+                                <label>Value</label>
+                                <input
+                                    type="number"
+                                    id="global-offer-value"
+                                    min="0"
+                                    step="0.01"
+                                />
+                            </div>
+                            <button
+                                type="submit"
+                                class="cta-button"
+                                style="padding: 10px"
+                            >
+                                Save
+                            </button>
+                        </form>
+                    </div>
+
+                    <!-- Promo Codes -->
+                    <div
+                        class="settings-block"
+                        style="
+                            border: 1px solid #eee;
+                            padding: 20px;
+                            border-radius: 8px;
+                        "
+                    >
+                        <h3>Promo Codes</h3>
+                        <div class="admin-table-container">
+                            <table
+                                class="admin-table"
+                                style="margin-bottom: 10px"
+                            >
+                                <thead>
+                                    <tr>
+                                        <th>Code</th>
+                                        <th>Type</th>
+                                        <th>Value</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="settings-promos-body"></tbody>
+                            </table>
+                        </div>
+                        <form
+                            onsubmit="handleAddPromo(event)"
+                            style="
+                                display: grid;
+                                grid-template-columns: 2fr 1fr 1fr auto;
+                                gap: 10px;
+                                align-items: end;
+                            "
+                        >
+                            <div class="form-group" style="margin: 0">
+                                <label>Code</label>
+                                <input
+                                    type="text"
+                                    id="new-promo-code"
+                                    required
+                                    placeholder="e.g. SAVE10"
+                                    style="text-transform: uppercase"
+                                />
+                            </div>
+                            <div class="form-group" style="margin: 0">
+                                <label>Type</label>
+                                <select id="new-promo-type">
+                                    <option value="percent">Percent (%)</option>
+                                    <option value="flat">Flat (₹)</option>
+                                </select>
+                            </div>
+                            <div class="form-group" style="margin: 0">
+                                <label>Value</label>
+                                <input
+                                    type="number"
+                                    id="new-promo-value"
+                                    required
+                                    min="0"
+                                    step="0.01"
+                                />
+                            </div>
+                            <button
+                                type="submit"
+                                class="cta-button"
+                                style="padding: 10px"
+                            >
+                                Add
+                            </button>
+                        </form>
+                    </div>
+                </section>
+
+                <!-- Categories Section -->
+                <section
+                    id="section-categories"
+                    class="admin-section-content"
+                    style="display: none"
+                >
+                    <h2 style="margin-bottom: 20px">Category Management</h2>
+                    <div
+                        class="admin-table-container"
+                        style="margin-bottom: 30px"
+                    >
+                        <h3 style="margin-bottom: 15px">Add New Category</h3>
+                        <form
+                            onsubmit="handleAddCategory(event)"
+                            style="display: flex; gap: 10px"
+                        >
+                            <input
+                                type="text"
+                                id="new-cat-name"
+                                placeholder="Category Name"
+                                required
+                                style="flex: 1"
+                            />
+                            <button type="submit" class="cta-button">
+                                Add
+                            </button>
+                        </form>
+                    </div>
+                    <div class="admin-table-container">
+                        <table class="admin-table">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Name</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="admin-categories-body"></tbody>
                         </table>
                     </div>
                 </section>
